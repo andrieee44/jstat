@@ -14,10 +14,9 @@ type Uptime struct {
 
 func (mod *Uptime) Run() (json.RawMessage, error) {
 	var (
-		buf       []byte
-		uptime    float64
-		uptimeInt int
-		err       error
+		buf    []byte
+		uptime int
+		err    error
 	)
 
 	buf, err = os.ReadFile("/proc/uptime")
@@ -25,19 +24,17 @@ func (mod *Uptime) Run() (json.RawMessage, error) {
 		return nil, err
 	}
 
-	uptime, err = strconv.ParseFloat(strings.Fields(string(buf))[0], 64)
+	uptime, err = strconv.Atoi(strings.Split(string(buf), ".")[0])
 	if err != nil {
 		return nil, err
 	}
 
-	uptimeInt = int(uptime)
-
 	return json.Marshal(struct {
 		Hours, Minutes, Seconds int
 	}{
-		Hours:   uptimeInt / 3600,
-		Minutes: (uptimeInt % 3600) / 60,
-		Seconds: uptimeInt % 60,
+		Hours:   uptime / 3600,
+		Minutes: (uptime % 3600) / 60,
+		Seconds: uptime % 60,
 	})
 }
 

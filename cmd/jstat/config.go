@@ -9,9 +9,10 @@ import (
 
 func newConfig() map[string]jstat.Module {
 	return map[string]jstat.Module{
-		"User": jstat.NewUser(),
-		"Date": jstat.NewDate(time.Second, "Jan _2 2006 (Mon) 3:04 PM", []string{"󱑊", "󱐿", "󱑀", "󱑁", "󱑂", "󱑃", "󱑄", "󱑅", "󱑆", "󱑇", "󱑈", "󱑉"}),
+		"User":   jstat.NewUser(),
+		"Date":   jstat.NewDate(time.Second, "Jan _2 2006 (Mon) 3:04 PM", []string{"󱑊", "󱐿", "󱑀", "󱑁", "󱑂", "󱑃", "󱑄", "󱑅", "󱑆", "󱑇", "󱑈", "󱑉"}),
 		"Uptime": jstat.NewUptime(time.Second),
+		"Bat":    jstat.NewBat(time.Second, []string{"󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"}),
 	}
 }
 
