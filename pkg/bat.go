@@ -12,6 +12,10 @@ type Bat struct {
 	icons    []string
 }
 
+func (mod *Bat) Init() error {
+	return nil
+}
+
 func (mod *Bat) Run() (json.RawMessage, error) {
 	type batInfo struct {
 		Name, Status, Icon string
@@ -64,9 +68,9 @@ func (mod *Bat) Cleanup() error {
 	return nil
 }
 
-func NewBat(interval time.Duration, icons []string) (*Bat, error) {
+func NewBat(interval time.Duration, icons []string) *Bat {
 	return &Bat{
 		interval: interval,
 		icons:    icons,
-	}, nil
+	}
 }

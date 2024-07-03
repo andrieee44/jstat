@@ -15,11 +15,11 @@ func newConfig() map[string]jstat.Module {
 	briIcons = []string{"󰃞", "󰃟", "󰃝", "󰃠"}
 
 	return map[string]jstat.Module{
-		"User":   newModule(jstat.NewUser()),
-		"Date":   newModule(jstat.NewDate(time.Second, "Jan _2 2006 (Mon) 3:04 PM", clockIcons)),
-		"Uptime": newModule(jstat.NewUptime(time.Second)),
-		"Bat":    newModule(jstat.NewBat(time.Second, batIcons)),
-		"Cpu":    newModule(jstat.NewCpu(time.Second, blockIcons)),
-		"Bri":    newModule(jstat.NewBri(briIcons)),
+		"User":   jstat.NewUser(),
+		"Date":   jstat.NewDate(time.Second, "Jan _2 2006 (Mon) 3:04 PM", clockIcons),
+		"Uptime": jstat.NewUptime(time.Second),
+		"Bat":    jstat.NewBat(time.Second, batIcons),
+		"Cpu":    jstat.NewCpu(time.Second, blockIcons),
+		"Bri":    jstat.NewBri(briIcons),
 	}
 }

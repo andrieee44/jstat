@@ -11,6 +11,10 @@ type Date struct {
 	icons    []string
 }
 
+func (mod *Date) Init() error {
+	return nil
+}
+
 func (mod *Date) Run() (json.RawMessage, error) {
 	var (
 		date time.Time
@@ -42,10 +46,10 @@ func (mod *Date) Cleanup() error {
 	return nil
 }
 
-func NewDate(interval time.Duration, format string, icons []string) (*Date, error) {
+func NewDate(interval time.Duration, format string, icons []string) *Date {
 	return &Date{
 		interval: interval,
 		format:   format,
 		icons:    icons,
-	}, nil
+	}
 }

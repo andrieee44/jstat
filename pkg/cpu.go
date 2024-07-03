@@ -21,6 +21,10 @@ type Cpu struct {
 	cores    []cpuCore
 }
 
+func (mod *Cpu) Init() error {
+	return nil
+}
+
 func (mod *Cpu) Run() (json.RawMessage, error) {
 	var (
 		core     cpuCore
@@ -138,9 +142,9 @@ func (mod *Cpu) updateCores() error {
 	return nil
 }
 
-func NewCpu(interval time.Duration, icons []string) (*Cpu, error) {
+func NewCpu(interval time.Duration, icons []string) *Cpu {
 	return &Cpu{
 		interval: interval,
 		icons:    icons,
-	}, nil
+	}
 }

@@ -12,6 +12,10 @@ type Uptime struct {
 	interval time.Duration
 }
 
+func (mod *Uptime) Init() error {
+	return nil
+}
+
 func (mod *Uptime) Run() (json.RawMessage, error) {
 	var (
 		buf    []byte
@@ -48,8 +52,8 @@ func (mod *Uptime) Cleanup() error {
 	return nil
 }
 
-func NewUptime(interval time.Duration) (*Uptime, error) {
+func NewUptime(interval time.Duration) *Uptime {
 	return &Uptime{
 		interval: interval,
-	}, nil
+	}
 }

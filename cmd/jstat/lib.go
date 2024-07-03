@@ -13,17 +13,13 @@ func panicIf(err error) {
 	}
 }
 
-func newModule(mod jstat.Module, err error) jstat.Module {
-	panicIf(err)
-
-	return mod
-}
-
 func runModule(msgChan chan<- jstat.Message, name string, mod jstat.Module) {
 	var (
 		data json.RawMessage
 		err  error
 	)
+
+	panicIf(mod.Init())
 
 	defer func() {
 		panicIf(mod.Cleanup())

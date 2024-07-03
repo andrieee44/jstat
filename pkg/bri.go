@@ -13,6 +13,34 @@ type Bri struct {
 	maxBri  int
 }
 
+func (mod *Bri) Init() error {
+	var (
+		watcher *fsnotify.Watcher
+		maxBri  int
+		err     error
+	)
+
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+
+	err = watcher.Add("/sys/class/backlight/intel_backlight/brightness")
+	if err != nil {
+		return err
+	}
+
+	maxBri, err = fileAtoi("/sys/class/backlight/intel_backlight/max_brightness")
+	if err != nil {
+		return err
+	}
+
+	mod.watcher = watcher
+	mod.maxBri = maxBri
+
+	return nil
+}
+
 func (mod *Bri) Run() (json.RawMessage, error) {
 	var (
 		bri  int
@@ -67,31 +95,8 @@ func (mod *Bri) Cleanup() error {
 	return mod.watcher.Close()
 }
 
-func NewBri(icons []string) (*Bri, error) {
-	var (
-		watcher *fsnotify.Watcher
-		maxBri  int
-		err     error
-	)
-
-	watcher, err = fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-
-	err = watcher.Add("/sys/class/backlight/intel_backlight/brightness")
-	if err != nil {
-		return nil, err
-	}
-
-	maxBri, err = fileAtoi("/sys/class/backlight/intel_backlight/max_brightness")
-	if err != nil {
-		return nil, err
-	}
-
+func NewBri(icons []string) *Bri {
 	return &Bri{
-		icons:   icons,
-		watcher: watcher,
-		maxBri:  maxBri,
-	}, nil
+		icons: icons,
+	}
 }

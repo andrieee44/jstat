@@ -8,6 +8,10 @@ import (
 
 type User struct{}
 
+func (mod *User) Init() error {
+	return nil
+}
+
 func (mod *User) Run() (json.RawMessage, error) {
 	var (
 		currentUser *user.User
@@ -43,6 +47,6 @@ func (mod *User) Cleanup() error {
 	return nil
 }
 
-func NewUser() (*User, error) {
-	return &User{}, nil
+func NewUser() *User {
+	return &User{}
 }
