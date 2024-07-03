@@ -32,14 +32,20 @@ func (mod *Date) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Date) Sleep() {
+func (mod *Date) Sleep() error {
 	time.Sleep(mod.interval)
+
+	return nil
 }
 
-func NewDate(interval time.Duration, format string, icons []string) *Date {
+func (mod *Date) Cleanup() error {
+	return nil
+}
+
+func NewDate(interval time.Duration, format string, icons []string) (*Date, error) {
 	return &Date{
 		interval: interval,
 		format:   format,
 		icons:    icons,
-	}
+	}, nil
 }

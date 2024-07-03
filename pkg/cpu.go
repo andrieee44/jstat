@@ -45,8 +45,14 @@ func (mod *Cpu) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Cpu) Sleep() {
+func (mod *Cpu) Sleep() error {
 	time.Sleep(mod.interval)
+
+	return nil
+}
+
+func (mod *Cpu) Cleanup() error {
+	return nil
 }
 
 func (mod *Cpu) updateCores() error {
@@ -125,9 +131,9 @@ func (mod *Cpu) updateCores() error {
 	return nil
 }
 
-func NewCpu(interval time.Duration, icons []string) *Cpu {
+func NewCpu(interval time.Duration, icons []string) (*Cpu, error) {
 	return &Cpu{
 		interval: interval,
 		icons:    icons,
-	}
+	}, nil
 }

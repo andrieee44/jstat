@@ -38,12 +38,18 @@ func (mod *Uptime) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Uptime) Sleep() {
+func (mod *Uptime) Sleep() error {
 	time.Sleep(mod.interval)
+
+	return nil
 }
 
-func NewUptime(interval time.Duration) *Uptime {
+func (mod *Uptime) Cleanup() error {
+	return nil
+}
+
+func NewUptime(interval time.Duration) (*Uptime, error) {
 	return &Uptime{
 		interval: interval,
-	}
+	}, nil
 }

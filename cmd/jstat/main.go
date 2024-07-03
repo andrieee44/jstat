@@ -7,12 +7,6 @@ import (
 	"github.com/andrieee44/jstat/pkg"
 )
 
-func panicIf(err error) {
-	if err != nil {
-		panic(fmt.Errorf("jstat: %s", err))
-	}
-}
-
 func main() {
 	var (
 		msgChan chan jstat.Message

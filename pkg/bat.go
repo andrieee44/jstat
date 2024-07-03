@@ -54,13 +54,19 @@ func (mod *Bat) Run() (json.RawMessage, error) {
 	return json.Marshal(batsInfo)
 }
 
-func (mod *Bat) Sleep() {
+func (mod *Bat) Sleep() error {
 	time.Sleep(mod.interval)
+
+	return nil
 }
 
-func NewBat(interval time.Duration, icons []string) *Bat {
+func (mod *Bat) Cleanup() error {
+	return nil
+}
+
+func NewBat(interval time.Duration, icons []string) (*Bat, error) {
 	return &Bat{
 		interval: interval,
 		icons:    icons,
-	}
+	}, nil
 }

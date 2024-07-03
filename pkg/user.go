@@ -35,10 +35,14 @@ func (mod *User) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *User) Sleep() {
+func (mod *User) Sleep() error {
 	select {}
 }
 
-func NewUser() *User {
-	return &User{}
+func (mod *User) Cleanup() error {
+	return nil
+}
+
+func NewUser() (*User, error) {
+	return &User{}, nil
 }
