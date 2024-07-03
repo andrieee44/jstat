@@ -3,6 +3,7 @@ package jstat
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -57,13 +58,13 @@ func (mod *Cpu) Cleanup() error {
 
 func (mod *Cpu) updateCores() error {
 	var (
-		stat                              *os.File
-		scanner                           *bufio.Scanner
-		fields                            []string
-		coreNStr, numStr                  string
-		idx, coreN, num, idle, sum, delta int
-		ok                                bool
-		err                               error
+		stat                                    *os.File
+		scanner                                 *bufio.Scanner
+		fields                                  []string
+		coreNStr, numStr                        string
+		idx, coreN, freq, num, idle, sum, delta int
+		ok                                      bool
+		err                                     error
 	)
 
 	stat, err = os.Open("/proc/stat")
@@ -93,6 +94,11 @@ func (mod *Cpu) updateCores() error {
 			mod.cores = append(mod.cores, cpuCore{})
 		}
 
+		freq, err = fileAtoi(fmt.Sprintf("/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", coreN))
+		if err != nil {
+			return err
+		}
+
 		idle = 0
 		sum = 0
 
@@ -115,6 +121,7 @@ func (mod *Cpu) updateCores() error {
 
 		delta = sum - mod.cores[coreN].sum
 		mod.cores[coreN].Usage = float64(delta-(idle-mod.cores[coreN].idle)) / float64(delta) * 100
+		mod.cores[coreN].Freq = freq
 		mod.cores[coreN].idle = idle
 		mod.cores[coreN].sum = sum
 	}
