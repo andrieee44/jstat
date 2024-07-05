@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-type Bat struct {
+type bat struct {
 	interval time.Duration
 	icons    []string
 }
 
-func (mod *Bat) Init() error {
+func (mod *bat) Init() error {
 	return nil
 }
 
-func (mod *Bat) Run() (json.RawMessage, error) {
+func (mod *bat) Run() (json.RawMessage, error) {
 	type batInfo struct {
 		Name, Status, Icon string
 		Capacity           int
@@ -58,18 +58,18 @@ func (mod *Bat) Run() (json.RawMessage, error) {
 	return json.Marshal(batsInfo)
 }
 
-func (mod *Bat) Sleep() error {
+func (mod *bat) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Bat) Cleanup() error {
+func (mod *bat) Cleanup() error {
 	return nil
 }
 
-func NewBat(interval time.Duration, icons []string) *Bat {
-	return &Bat{
+func NewBat(interval time.Duration, icons []string) *bat {
+	return &bat{
 		interval: interval,
 		icons:    icons,
 	}

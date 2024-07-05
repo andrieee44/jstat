@@ -7,16 +7,16 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type Disk struct {
+type disk struct {
 	interval     time.Duration
 	paths, icons []string
 }
 
-func (mod *Disk) Init() error {
+func (mod *disk) Init() error {
 	return nil
 }
 
-func (mod *Disk) Run() (json.RawMessage, error) {
+func (mod *disk) Run() (json.RawMessage, error) {
 	type diskStruct struct {
 		Free, Total, Used int
 		UsedPerc          float64
@@ -57,18 +57,18 @@ func (mod *Disk) Run() (json.RawMessage, error) {
 	return json.Marshal(disks)
 }
 
-func (mod *Disk) Sleep() error {
+func (mod *disk) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Disk) Cleanup() error {
+func (mod *disk) Cleanup() error {
 	return nil
 }
 
-func NewDisk(interval time.Duration, paths, icons []string) *Disk {
-	return &Disk{
+func NewDisk(interval time.Duration, paths, icons []string) *disk {
+	return &disk{
 		interval: interval,
 		paths:    paths,
 		icons:    icons,

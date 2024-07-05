@@ -8,15 +8,15 @@ import (
 	"time"
 )
 
-type Uptime struct {
+type uptime struct {
 	interval time.Duration
 }
 
-func (mod *Uptime) Init() error {
+func (mod *uptime) Init() error {
 	return nil
 }
 
-func (mod *Uptime) Run() (json.RawMessage, error) {
+func (mod *uptime) Run() (json.RawMessage, error) {
 	var (
 		buf    []byte
 		uptime int
@@ -42,18 +42,18 @@ func (mod *Uptime) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Uptime) Sleep() error {
+func (mod *uptime) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Uptime) Cleanup() error {
+func (mod *uptime) Cleanup() error {
 	return nil
 }
 
-func NewUptime(interval time.Duration) *Uptime {
-	return &Uptime{
+func NewUptime(interval time.Duration) *uptime {
+	return &uptime{
 		interval: interval,
 	}
 }

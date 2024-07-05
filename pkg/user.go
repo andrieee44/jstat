@@ -6,13 +6,13 @@ import (
 	"os/user"
 )
 
-type User struct{}
+type userHost struct{}
 
-func (mod *User) Init() error {
+func (mod *userHost) Init() error {
 	return nil
 }
 
-func (mod *User) Run() (json.RawMessage, error) {
+func (mod *userHost) Run() (json.RawMessage, error) {
 	var (
 		currentUser *user.User
 		host        string
@@ -39,14 +39,14 @@ func (mod *User) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *User) Sleep() error {
+func (mod *userHost) Sleep() error {
 	select {}
 }
 
-func (mod *User) Cleanup() error {
+func (mod *userHost) Cleanup() error {
 	return nil
 }
 
-func NewUser() *User {
-	return &User{}
+func NewUserHost() *userHost {
+	return &userHost{}
 }

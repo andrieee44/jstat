@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-type Swap struct {
+type swap struct {
 	interval time.Duration
 	icons    []string
 }
 
-func (mod *Swap) Init() error {
+func (mod *swap) Init() error {
 	return nil
 }
 
-func (mod *Swap) Run() (json.RawMessage, error) {
+func (mod *swap) Run() (json.RawMessage, error) {
 	var (
 		meminfo  map[string]int
 		used     int
@@ -43,18 +43,18 @@ func (mod *Swap) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Swap) Sleep() error {
+func (mod *swap) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Swap) Cleanup() error {
+func (mod *swap) Cleanup() error {
 	return nil
 }
 
-func NewSwap(interval time.Duration, icons []string) *Swap {
-	return &Swap{
+func NewSwap(interval time.Duration, icons []string) *swap {
+	return &swap{
 		interval: interval,
 		icons:    icons,
 	}

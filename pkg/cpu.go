@@ -15,17 +15,17 @@ type cpuCore struct {
 	Usage           float64
 }
 
-type Cpu struct {
+type cpu struct {
 	interval time.Duration
 	icons    []string
 	cores    []cpuCore
 }
 
-func (mod *Cpu) Init() error {
+func (mod *cpu) Init() error {
 	return nil
 }
 
-func (mod *Cpu) Run() (json.RawMessage, error) {
+func (mod *cpu) Run() (json.RawMessage, error) {
 	var (
 		stat                                    *os.File
 		scanner                                 *bufio.Scanner
@@ -115,18 +115,18 @@ func (mod *Cpu) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Cpu) Sleep() error {
+func (mod *cpu) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Cpu) Cleanup() error {
+func (mod *cpu) Cleanup() error {
 	return nil
 }
 
-func NewCpu(interval time.Duration, icons []string) *Cpu {
-	return &Cpu{
+func NewCpu(interval time.Duration, icons []string) *cpu {
+	return &cpu{
 		interval: interval,
 		icons:    icons,
 	}

@@ -7,13 +7,25 @@ import (
 	"github.com/andrieee44/jstat/pkg"
 )
 
+type message struct {
+	name string
+	data json.RawMessage
+}
+
+func newMessage(name string, data json.RawMessage) message {
+	return message{
+		name: name,
+		data: data,
+	}
+}
+
 func panicIf(err error) {
 	if err != nil {
 		panic(fmt.Errorf("jstat: %s", err))
 	}
 }
 
-func runModule(msgChan chan<- jstat.Message, name string, mod jstat.Module) {
+func runModule(msgChan chan<- message, name string, mod jstat.Module) {
 	var (
 		data json.RawMessage
 		err  error
@@ -29,12 +41,12 @@ func runModule(msgChan chan<- jstat.Message, name string, mod jstat.Module) {
 		data, err = mod.Run()
 		panicIf(err)
 
-		msgChan <- jstat.NewMessage(name, data)
+		msgChan <- newMessage(name, data)
 		panicIf(mod.Sleep())
 	}
 }
 
-func runConfig(ch chan<- jstat.Message) {
+func runConfig(ch chan<- message) {
 	var (
 		name string
 		mod  jstat.Module

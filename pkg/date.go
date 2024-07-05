@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-type Date struct {
+type date struct {
 	interval time.Duration
 	format   string
 	icons    []string
 }
 
-func (mod *Date) Init() error {
+func (mod *date) Init() error {
 	return nil
 }
 
-func (mod *Date) Run() (json.RawMessage, error) {
+func (mod *date) Run() (json.RawMessage, error) {
 	var (
 		date time.Time
 		hour int
@@ -36,18 +36,18 @@ func (mod *Date) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Date) Sleep() error {
+func (mod *date) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Date) Cleanup() error {
+func (mod *date) Cleanup() error {
 	return nil
 }
 
-func NewDate(interval time.Duration, format string, icons []string) *Date {
-	return &Date{
+func NewDate(interval time.Duration, format string, icons []string) *date {
+	return &date{
 		interval: interval,
 		format:   format,
 		icons:    icons,

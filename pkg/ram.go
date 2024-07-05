@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-type Ram struct {
+type ram struct {
 	interval time.Duration
 	icons    []string
 }
 
-func (mod *Ram) Init() error {
+func (mod *ram) Init() error {
 	return nil
 }
 
-func (mod *Ram) Run() (json.RawMessage, error) {
+func (mod *ram) Run() (json.RawMessage, error) {
 	var (
 		meminfo  map[string]int
 		used     int
@@ -44,18 +44,18 @@ func (mod *Ram) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *Ram) Sleep() error {
+func (mod *ram) Sleep() error {
 	time.Sleep(mod.interval)
 
 	return nil
 }
 
-func (mod *Ram) Cleanup() error {
+func (mod *ram) Cleanup() error {
 	return nil
 }
 
-func NewRam(interval time.Duration, icons []string) *Ram {
-	return &Ram{
+func NewRam(interval time.Duration, icons []string) *ram {
+	return &ram{
 		interval: interval,
 		icons:    icons,
 	}
