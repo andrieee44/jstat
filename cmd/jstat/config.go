@@ -22,5 +22,6 @@ func newConfig() map[string]jstat.Module {
 		"Cpu":    jstat.NewCpu(time.Second, blockIcons),
 		"Bri":    jstat.NewBri(briIcons),
 		"Disk":   jstat.NewDisk(time.Minute, []string{"/"}, blockIcons),
+		"Swap":   jstat.NewSwap(time.Second, blockIcons),
 	}
 }

@@ -1,8 +1,10 @@
 package jstat
 
 import (
+	"bufio"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func icon(icons []string, max, val float64) string {
@@ -39,4 +41,73 @@ func fileAtoi(file string) (int, error) {
 	}
 
 	return num, nil
+}
+
+func removeKey(keys []string, key string) ([]string, bool) {
+	var (
+		i int
+		v string
+	)
+
+	for i, v = range keys {
+		if v == key {
+			return append(keys[:i], keys[i+1:]...), true
+		}
+	}
+
+	return keys, false
+}
+
+func meminfoMap(keys []string) (map[string]int, error) {
+	var (
+		keyVal  map[string]int
+		meminfo *os.File
+		scanner *bufio.Scanner
+		fields  []string
+		key     string
+		val     int
+		ok      bool
+		err     error
+	)
+
+	keyVal = make(map[string]int)
+
+	meminfo, err = os.Open("/proc/meminfo")
+	if err != nil {
+		return nil, err
+	}
+
+	scanner = bufio.NewScanner(meminfo)
+
+	for scanner.Scan() {
+		fields = strings.Fields(scanner.Text())
+		key = fields[0][:len(fields[0])-1]
+
+		keys, ok = removeKey(keys, key)
+		if !ok {
+			continue
+		}
+
+		val, err = strconv.Atoi(fields[1])
+		if err != nil {
+			return nil, err
+		}
+
+		keyVal[key] = val
+
+		if len(keys) == 0 {
+			break
+		}
+	}
+
+	if scanner.Err() != nil {
+		return nil, err
+	}
+
+	err = meminfo.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return keyVal, nil
 }
