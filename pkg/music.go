@@ -11,10 +11,13 @@ import (
 )
 
 type music struct {
-	scrollInterval      time.Duration
-	format, song, state string
-	limit, scroll       int
-	watcher             *mpd.Watcher
+	scrollInterval time.Duration
+	format         string
+	limit          int
+
+	song, state string
+	scroll      int
+	watcher     *mpd.Watcher
 }
 
 func (mod *music) Init() error {
@@ -25,7 +28,7 @@ func (mod *music) Init() error {
 		return err
 	}
 
-	err = mod.music()
+	err = mod.updateSong()
 	if err != nil {
 		return err
 	}
@@ -67,7 +70,7 @@ func (mod *music) Sleep() error {
 
 		mod.scroll = 0
 
-		err = mod.music()
+		err = mod.updateSong()
 		if err != nil {
 			return err
 		}
@@ -91,11 +94,11 @@ func (mod *music) Cleanup() error {
 	return mod.watcher.Close()
 }
 
-func (mod *music) music() error {
+func (mod *music) updateSong() error {
 	var (
-		client        *mpd.Client
-		music, status mpd.Attrs
-		err           error
+		client       *mpd.Client
+		song, status mpd.Attrs
+		err          error
 	)
 
 	client, err = mpd.Dial("tcp", "127.0.0.1:6600")
@@ -103,7 +106,7 @@ func (mod *music) music() error {
 		return err
 	}
 
-	music, err = client.CurrentSong()
+	song, err = client.CurrentSong()
 	if err != nil {
 		return err
 	}
@@ -120,7 +123,7 @@ func (mod *music) music() error {
 
 	mod.state = status["state"]
 	mod.song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.format, func(key string) string {
-		return music[key[1:len(key)-1]]
+		return song[key[1:len(key)-1]]
 	})
 
 	return nil

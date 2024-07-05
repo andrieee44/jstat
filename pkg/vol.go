@@ -11,8 +11,9 @@ import (
 type vol struct {
 	discardInterval time.Duration
 	icons           []string
-	client          *pulseaudio.Client
-	updates         <-chan struct{}
+
+	client  *pulseaudio.Client
+	updates <-chan struct{}
 }
 
 func (mod *vol) Init() error {

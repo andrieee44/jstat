@@ -18,7 +18,8 @@ type cpuCore struct {
 type cpu struct {
 	interval time.Duration
 	icons    []string
-	cores    []cpuCore
+
+	cores []cpuCore
 }
 
 func (mod *cpu) Init() error {
