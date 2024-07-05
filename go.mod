@@ -7,4 +7,7 @@ require (
 	github.com/mafik/pulseaudio v0.0.0-20240327130323-384e01075e6e
 )
 
-require golang.org/x/sys v0.4.0
+require (
+	github.com/fhs/gompd/v2 v2.3.0
+	golang.org/x/sys v0.4.0
+)

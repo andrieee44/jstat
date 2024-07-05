@@ -26,5 +26,6 @@ func newConfig() map[string]jstat.Module {
 		"Swap":     jstat.NewSwap(time.Second, blockIcons),
 		"Ram":      jstat.NewRam(time.Second, blockIcons),
 		"Vol":      jstat.NewVol(10*time.Millisecond, volIcons),
+		"Music":    jstat.NewMusic(500*time.Millisecond, "%AlbumArtist% - %Track% - %Album% - %Title%", 20),
 	}
 }
