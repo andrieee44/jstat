@@ -23,5 +23,6 @@ func newConfig() map[string]jstat.Module {
 		"Bri":    jstat.NewBri(briIcons),
 		"Disk":   jstat.NewDisk(time.Minute, []string{"/"}, blockIcons),
 		"Swap":   jstat.NewSwap(time.Second, blockIcons),
+		"Ram":    jstat.NewRam(time.Second, blockIcons),
 	}
 }
