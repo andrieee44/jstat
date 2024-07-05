@@ -16,10 +16,10 @@ func (mod *Swap) Init() error {
 
 func (mod *Swap) Run() (json.RawMessage, error) {
 	var (
-		meminfo                   map[string]int
-		total, free, cached, used int
-		usedPerc                  float64
-		err                       error
+		meminfo  map[string]int
+		used     int
+		usedPerc float64
+		err      error
 	)
 
 	meminfo, err = meminfoMap([]string{"SwapCached", "SwapTotal", "SwapFree"})
@@ -27,17 +27,16 @@ func (mod *Swap) Run() (json.RawMessage, error) {
 		return nil, err
 	}
 
-	total, free, cached = meminfo["SwapTotal"], meminfo["SwapFree"], meminfo["SwapCached"]
-	used = total - free + cached
-	usedPerc = float64(used) / float64(total) * 100
+	used = meminfo["SwapTotal"] - meminfo["SwapFree"] + meminfo["SwapCached"]
+	usedPerc = float64(used) / float64(meminfo["SwapTotal"]) * 100
 
 	return json.Marshal(struct {
 		Total, Free, Used int
 		UsedPerc          float64
 		Icon              string
 	}{
-		Total:    total,
-		Free:     free,
+		Total:    meminfo["SwapTotal"],
+		Free:     meminfo["SwapFree"],
 		Used:     used,
 		UsedPerc: usedPerc,
 		Icon:     icon(mod.icons, 100, usedPerc),
