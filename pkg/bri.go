@@ -14,29 +14,22 @@ type bri struct {
 }
 
 func (mod *bri) Init() error {
-	var (
-		watcher *fsnotify.Watcher
-		maxBri  int
-		err     error
-	)
+	var err error
 
-	watcher, err = fsnotify.NewWatcher()
+	mod.watcher, err = fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
 
-	err = watcher.Add("/sys/class/backlight/intel_backlight/brightness")
+	err = mod.watcher.Add("/sys/class/backlight/intel_backlight/brightness")
 	if err != nil {
 		return err
 	}
 
-	maxBri, err = fileAtoi("/sys/class/backlight/intel_backlight/max_brightness")
+	mod.maxBri, err = fileAtoi("/sys/class/backlight/intel_backlight/max_brightness")
 	if err != nil {
 		return err
 	}
-
-	mod.watcher = watcher
-	mod.maxBri = maxBri
 
 	return nil
 }

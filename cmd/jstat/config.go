@@ -7,12 +7,13 @@ import (
 )
 
 func newConfig() map[string]jstat.Module {
-	var batIcons, blockIcons, clockIcons, briIcons []string
+	var batIcons, blockIcons, clockIcons, briIcons, volIcons []string
 
 	batIcons = []string{"󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"}
 	blockIcons = []string{" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
 	clockIcons = []string{"󱑊", "󱐿", "󱑀", "󱑁", "󱑂", "󱑃", "󱑄", "󱑅", "󱑆", "󱑇", "󱑈", "󱑉"}
 	briIcons = []string{"󰃞", "󰃟", "󰃝", "󰃠"}
+	volIcons = []string{"󰕿", "󰖀", "󰕾"}
 
 	return map[string]jstat.Module{
 		"UserHost": jstat.NewUserHost(),
@@ -24,5 +25,6 @@ func newConfig() map[string]jstat.Module {
 		"Disk":     jstat.NewDisk(time.Minute, []string{"/"}, blockIcons),
 		"Swap":     jstat.NewSwap(time.Second, blockIcons),
 		"Ram":      jstat.NewRam(time.Second, blockIcons),
+		"Vol":      jstat.NewVol(10*time.Millisecond, volIcons),
 	}
 }
