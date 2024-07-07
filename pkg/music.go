@@ -28,7 +28,7 @@ func (mod *music) Init() error {
 		return err
 	}
 
-	err = mod.updateSong()
+	err = mod.updateInfo()
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (mod *music) Sleep() error {
 
 		mod.scroll = 0
 
-		err = mod.updateSong()
+		err = mod.updateInfo()
 		if err != nil {
 			return err
 		}
@@ -94,7 +94,7 @@ func (mod *music) Cleanup() error {
 	return mod.watcher.Close()
 }
 
-func (mod *music) updateSong() error {
+func (mod *music) updateInfo() error {
 	var (
 		client       *mpd.Client
 		song, status mpd.Attrs
