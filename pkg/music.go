@@ -15,7 +15,7 @@ type music struct {
 
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
-	scrollChan  <-chan int
+	updates     <-chan struct{}
 	scroll      int
 	song, state string
 }
@@ -33,9 +33,8 @@ func (mod *music) Init() error {
 		return err
 	}
 
-	mod.nameChan, mod.scrollChan = scroll(mod.scrollInterval, mod.limit)
+	mod.nameChan, mod.updates = scroll(&mod.scroll, mod.scrollInterval, mod.limit)
 	mod.nameChan <- mod.song
-	mod.scroll = <-mod.scrollChan
 
 	return nil
 }
@@ -63,10 +62,9 @@ func (mod *music) Sleep() error {
 		}
 
 		mod.nameChan <- mod.song
-		mod.scroll = <-mod.scrollChan
 	case err = <-mod.watcher.Error:
 		return err
-	case mod.scroll = <-mod.scrollChan:
+	case <-mod.updates:
 	}
 
 	return nil

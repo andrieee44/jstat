@@ -9,51 +9,56 @@ import (
 	"unicode/utf8"
 )
 
-func scrollEvent(nameChan <-chan string, scrollChan chan<- int, scrollInterval time.Duration, limit int) {
+func scrollLoop(nameChan <-chan string, updates chan<- struct{}, scrollPtr *int, scrollInterval time.Duration, limit int) {
 	var (
-		name            string
-		nameLen, scroll int
+		name    string
+		nameLen int
 	)
 
 	for {
 		select {
 		case name = <-nameChan:
 			nameLen = utf8.RuneCountInString(name)
-			scroll = 0
+			*scrollPtr = 0
 		case <-time.After(scrollInterval):
 			if nameLen <= limit {
 				continue
 			}
 
-			scroll++
-			if scroll > nameLen-limit {
-				scroll = 0
+			*scrollPtr++
+			if *scrollPtr > nameLen-limit {
+				*scrollPtr = 0
 			}
 		}
 
-		scrollChan <- scroll
+		updates <- struct{}{}
 	}
 }
 
-func scroll(scrollInterval time.Duration, limit int) (chan<- string, <-chan int) {
+func discardNameChan(nameChan <-chan string) {
+	for {
+		<-nameChan
+	}
+}
+
+func scroll(scrollPtr *int, scrollInterval time.Duration, limit int) (chan<- string, <-chan struct{}) {
 	var (
-		nameChan   chan string
-		scrollChan chan int
+		nameChan chan string
+		updates  chan struct{}
 	)
 
 	nameChan = make(chan string)
-	scrollChan = make(chan int)
+	updates = make(chan struct{})
 
 	if scrollInterval == 0 || limit == 0 {
-		close(nameChan)
-		close(scrollChan)
+		go discardNameChan(nameChan)
 
-		return nameChan, scrollChan
+		return nameChan, nil
 	}
 
-	go scrollEvent(nameChan, scrollChan, scrollInterval, limit)
+	go scrollLoop(nameChan, updates, scrollPtr, scrollInterval, limit)
 
-	return nameChan, scrollChan
+	return nameChan, updates
 }
 
 func icon(icons []string, max, val float64) string {
