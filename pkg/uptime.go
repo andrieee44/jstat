@@ -53,7 +53,5 @@ func (mod *uptime) Cleanup() error {
 }
 
 func NewUptime(interval time.Duration) *uptime {
-	return &uptime{
-		interval: interval,
-	}
+	return &uptime{interval: interval}
 }
