@@ -11,8 +11,10 @@ import (
 )
 
 type cpuCore struct {
-	Freq, sum, idle int
-	Usage           float64
+	Freq  int
+	Usage float64
+
+	sum, idle int
 }
 
 type cpu struct {

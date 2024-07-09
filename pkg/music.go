@@ -2,10 +2,8 @@ package jstat
 
 import (
 	"encoding/json"
-	"errors"
 	"regexp"
 	"time"
-	"unicode/utf8"
 
 	"github.com/fhs/gompd/v2/mpd"
 )
@@ -15,9 +13,11 @@ type music struct {
 	format         string
 	limit          int
 
-	song, state string
-	scroll      int
 	watcher     *mpd.Watcher
+	nameChan    chan<- string
+	scrollChan  <-chan int
+	scroll      int
+	song, state string
 }
 
 func (mod *music) Init() error {
@@ -32,6 +32,10 @@ func (mod *music) Init() error {
 	if err != nil {
 		return err
 	}
+
+	mod.nameChan, mod.scrollChan = scroll(mod.scrollInterval, mod.limit)
+	mod.nameChan <- mod.song
+	mod.scroll = <-mod.scrollChan
 
 	return nil
 }
@@ -49,42 +53,20 @@ func (mod *music) Run() (json.RawMessage, error) {
 }
 
 func (mod *music) Sleep() error {
-	var (
-		timer    <-chan time.Time
-		musicLen int
-		ok       bool
-		err      error
-	)
-
-	musicLen = utf8.RuneCountInString(mod.song)
-
-	if mod.limit != 0 && mod.scrollInterval != 0 && musicLen > mod.limit {
-		timer = time.After(mod.scrollInterval)
-	}
+	var err error
 
 	select {
-	case _, ok = <-mod.watcher.Event:
-		if !ok {
-			return errors.New("channel closed unexpectedly")
-		}
-
-		mod.scroll = 0
-
+	case <-mod.watcher.Event:
 		err = mod.updateInfo()
 		if err != nil {
 			return err
 		}
-	case err, ok = <-mod.watcher.Error:
-		if !ok {
-			return errors.New("channel closed unexpectedly")
-		}
 
+		mod.nameChan <- mod.song
+		mod.scroll = <-mod.scrollChan
+	case err = <-mod.watcher.Error:
 		return err
-	case <-timer:
-		mod.scroll++
-		if mod.scroll > musicLen-mod.limit {
-			mod.scroll = 0
-		}
+	case mod.scroll = <-mod.scrollChan:
 	}
 
 	return nil

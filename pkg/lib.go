@@ -5,7 +5,56 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
+	"unicode/utf8"
 )
+
+func scrollEvent(nameChan <-chan string, scrollChan chan<- int, scrollInterval time.Duration, limit int) {
+	var (
+		name            string
+		nameLen, scroll int
+	)
+
+	for {
+		select {
+		case name = <-nameChan:
+			nameLen = utf8.RuneCountInString(name)
+			scroll = 0
+		case <-time.After(scrollInterval):
+			if nameLen <= limit {
+				continue
+			}
+
+			scroll++
+			if scroll > nameLen-limit {
+				scroll = 0
+			}
+		}
+
+		scrollChan <- scroll
+	}
+}
+
+func scroll(scrollInterval time.Duration, limit int) (chan<- string, <-chan int) {
+	var (
+		nameChan   chan string
+		scrollChan chan int
+	)
+
+	nameChan = make(chan string)
+	scrollChan = make(chan int)
+
+	if scrollInterval == 0 || limit == 0 {
+		close(nameChan)
+		close(scrollChan)
+
+		return nameChan, scrollChan
+	}
+
+	go scrollEvent(nameChan, scrollChan, scrollInterval, limit)
+
+	return nameChan, scrollChan
+}
 
 func icon(icons []string, max, val float64) string {
 	var index, iconsLen int

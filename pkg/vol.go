@@ -2,7 +2,6 @@ package jstat
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/mafik/pulseaudio"
@@ -64,19 +63,11 @@ func (mod *vol) Run() (json.RawMessage, error) {
 }
 
 func (mod *vol) Sleep() error {
-	var ok bool
-
-	_, ok = <-mod.updates
-	if !ok {
-		return errors.New("channel closed unexpectedly")
-	}
+	<-mod.updates
 
 	for {
 		select {
-		case _, ok = <-mod.updates:
-			if !ok {
-				return errors.New("channel closed unexpectedly")
-			}
+		case <-mod.updates:
 		case <-time.After(mod.discardInterval):
 			return nil
 		}

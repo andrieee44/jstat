@@ -2,7 +2,6 @@ package jstat
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -61,25 +60,16 @@ func (mod *bri) Run() (json.RawMessage, error) {
 func (mod *bri) Sleep() error {
 	var (
 		event fsnotify.Event
-		ok    bool
 		err   error
 	)
 
 	for {
 		select {
-		case event, ok = <-mod.watcher.Events:
-			if !ok {
-				return errors.New("channel closed unexpectedly")
-			}
-
+		case event = <-mod.watcher.Events:
 			if event.Has(fsnotify.Write) {
 				return nil
 			}
-		case err, ok = <-mod.watcher.Errors:
-			if !ok {
-				return errors.New("channel closed unexpectedly")
-			}
-
+		case err = <-mod.watcher.Errors:
 			return err
 		}
 	}
