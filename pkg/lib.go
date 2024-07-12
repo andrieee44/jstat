@@ -41,24 +41,20 @@ func discardNameChan(nameChan <-chan string) {
 	}
 }
 
-func scroll(scrollPtr *int, scrollInterval time.Duration, limit int) (chan<- string, <-chan struct{}) {
-	var (
-		nameChan chan string
-		updates  chan struct{}
-	)
+func scrollEvent(updates chan<- struct{}, scrollPtr *int, scrollInterval time.Duration, limit int) chan<- string {
+	var nameChan chan string
 
 	nameChan = make(chan string)
-	updates = make(chan struct{})
 
 	if scrollInterval == 0 || limit == 0 {
 		go discardNameChan(nameChan)
 
-		return nameChan, nil
+		return nameChan
 	}
 
 	go scrollLoop(nameChan, updates, scrollPtr, scrollInterval, limit)
 
-	return nameChan, updates
+	return nameChan
 }
 
 func icon(icons []string, max, val float64) string {
