@@ -9,14 +9,15 @@ import (
 func newConfig() map[string]jstat.Module {
 	const limit int = 20
 
-	var batIcons, blockIcons, clockIcons, briIcons, volIcons, netIcons []string
+	var diskPaths, batIcons, blockIcons, clockIcons, briIcons, volIcons, internetIcons []string
 
+	diskPaths = []string{"/"}
 	batIcons = []string{"󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"}
 	blockIcons = []string{" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
 	clockIcons = []string{"󱑊", "󱐿", "󱑀", "󱑁", "󱑂", "󱑃", "󱑄", "󱑅", "󱑆", "󱑇", "󱑈", "󱑉"}
 	briIcons = []string{"󰃞", "󰃟", "󰃝", "󰃠"}
 	volIcons = []string{"󰕿", "󰖀", "󰕾"}
-	netIcons = []string{"󰤯", "󰤟", "󰤢", "󰤥", "󰤨"}
+	internetIcons = []string{"󰤯", "󰤟", "󰤢", "󰤥", "󰤨"}
 
 	return map[string]jstat.Module{
 		"UserHost": jstat.NewUserHost(),
@@ -25,11 +26,12 @@ func newConfig() map[string]jstat.Module {
 		"Bat":      jstat.NewBat(time.Second, batIcons),
 		"Cpu":      jstat.NewCpu(time.Second, blockIcons),
 		"Bri":      jstat.NewBri(briIcons),
-		"Disk":     jstat.NewDisk(time.Minute, []string{"/"}, blockIcons),
+		"Disk":     jstat.NewDisk(time.Minute, diskPaths, blockIcons),
 		"Swap":     jstat.NewSwap(time.Second, blockIcons),
 		"Ram":      jstat.NewRam(time.Second, blockIcons),
 		"Vol":      jstat.NewVol(10*time.Millisecond, volIcons),
 		"Music":    jstat.NewMusic(500*time.Millisecond, "%AlbumArtist% - %Track% - %Album% - %Title%", limit),
-		"Net":      jstat.NewNet(500*time.Millisecond, time.Second, limit, netIcons),
+		"Internet": jstat.NewInternet(500*time.Millisecond, time.Second, limit, internetIcons),
+		"Hyprland": jstat.NewHyprland(500*time.Millisecond, limit),
 	}
 }
