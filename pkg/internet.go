@@ -43,7 +43,7 @@ func (mod *internet) Init() error {
 
 	mod.eth = make(map[string]*ethInfo)
 	mod.wifi = make(map[string]*wifiInfo)
-	mod.updatesChan = make(chan struct{})
+	mod.updatesChan = make(chan struct{}, 1)
 	mod.timerChan = make(chan struct{})
 	go mod.timerLoop()
 
