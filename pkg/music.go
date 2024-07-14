@@ -15,7 +15,7 @@ type music struct {
 
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
-	updates     chan struct{}
+	updatesChan chan struct{}
 	scroll      int
 	song, state string
 }
@@ -28,16 +28,10 @@ func (mod *music) Init() error {
 		return err
 	}
 
-	err = mod.updateInfo()
-	if err != nil {
-		return err
-	}
+	mod.updatesChan = make(chan struct{})
+	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.scrollInterval, mod.limit)
 
-	mod.updates = make(chan struct{})
-	mod.nameChan = scrollEvent(mod.updates, &mod.scroll, mod.scrollInterval, mod.limit)
-	mod.nameChan <- mod.song
-
-	return nil
+	return mod.updateInfo()
 }
 
 func (mod *music) Run() (json.RawMessage, error) {
@@ -56,16 +50,11 @@ func (mod *music) Sleep() error {
 	var err error
 
 	select {
+	case <-mod.updatesChan:
 	case <-mod.watcher.Event:
-		err = mod.updateInfo()
-		if err != nil {
-			return err
-		}
-
-		mod.nameChan <- mod.song
+		return mod.updateInfo()
 	case err = <-mod.watcher.Error:
 		return err
-	case <-mod.updates:
 	}
 
 	return nil
@@ -106,6 +95,8 @@ func (mod *music) updateInfo() error {
 	mod.song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.format, func(key string) string {
 		return song[key[1:len(key)-1]]
 	})
+
+	mod.nameChan <- mod.song
 
 	return nil
 }
