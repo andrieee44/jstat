@@ -22,7 +22,10 @@ func scrollLoop(nameChan <-chan string, updates chan<- struct{}, scrollPtr *int,
 			*scrollPtr = 0
 		case <-time.After(scrollInterval):
 			if nameLen <= limit {
-				continue
+				name = <-nameChan
+				nameLen = utf8.RuneCountInString(name)
+				*scrollPtr = 0
+				break
 			}
 
 			*scrollPtr++
