@@ -14,6 +14,7 @@ import (
 )
 
 type ethInfo struct {
+	Name    string
 	Powered bool
 	Scroll  int
 }
@@ -196,7 +197,10 @@ func (mod *internet) updateEth() error {
 		ethIface = filepath.Base(ethIface)
 		_, ok = mod.eth[ethIface]
 		if !ok {
-			mod.eth[ethIface] = new(ethInfo)
+			mod.eth[ethIface] = &ethInfo{
+				Name: ethIface,
+			}
+
 			scrollEvent(mod.updatesChan, &mod.eth[ethIface].Scroll, mod.scrollInterval, mod.limit) <- ethIface
 		}
 
@@ -240,11 +244,6 @@ func (mod *internet) updateWifi() error {
 		}
 
 		if !mod.wifi[wifiIface.Name].Powered {
-			if mod.wifi[wifiIface.Name].Name != "" {
-				mod.wifi[wifiIface.Name].nameChan <- ""
-			}
-
-			mod.wifi[wifiIface.Name].Name = ""
 			mod.wifi[wifiIface.Name].Scanning, err = mod.isScanning(wifiIface.Name)
 			if err != nil {
 				return err
