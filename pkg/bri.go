@@ -80,5 +80,7 @@ func (mod *bri) Cleanup() error {
 }
 
 func NewBri(icons []string) *bri {
-	return &bri{icons: icons}
+	return &bri{
+		icons: icons,
+	}
 }

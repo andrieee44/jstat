@@ -34,5 +34,6 @@ func newConfig() map[string]jstat.Module {
 		"Internet":  jstat.NewInternet(500*time.Millisecond, time.Second, limit, internetIcons),
 		"Hyprland":  jstat.NewHyprland(500*time.Millisecond, limit),
 		"Bluetooth": jstat.NewBluetooth(500*time.Millisecond, limit, batIcons),
+		"NetSpd":    jstat.NewNetSpd(time.Second),
 	}
 }

@@ -3,6 +3,7 @@ package jstat
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/godbus/dbus/v5"
@@ -39,8 +40,8 @@ type bluetooth struct {
 func (mod *bluetooth) Init() error {
 	var (
 		objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant
+		paths   []dbus.ObjectPath
 		path    dbus.ObjectPath
-		object  map[string]map[string]dbus.Variant
 		err     error
 	)
 
@@ -64,13 +65,34 @@ func (mod *bluetooth) Init() error {
 		return err
 	}
 
-	for path, object = range objects {
-		err = mod.addAdapter(path, object)
+	paths = make([]dbus.ObjectPath, 0, len(objects))
+	for path = range objects {
+		paths = append(paths, path)
+	}
+
+	slices.SortFunc(paths, func(pathA, pathB dbus.ObjectPath) int {
+		var adapterA, adapterB bool
+
+		adapterA = mod.isAdapter(objects, pathA)
+		adapterB = mod.isAdapter(objects, pathB)
+
+		switch {
+		case adapterA && adapterB:
+			return 0
+		case adapterA:
+			return -1
+		default:
+			return 0
+		}
+	})
+
+	for _, path = range paths {
+		err = mod.addAdapter(path, objects[path])
 		if err != nil {
 			return err
 		}
 
-		err = mod.addDevice(path, object)
+		err = mod.addDevice(path, objects[path])
 		if err != nil {
 			return err
 		}
@@ -141,6 +163,14 @@ func (mod *bluetooth) Sleep() error {
 
 func (mod *bluetooth) Cleanup() error {
 	return mod.sysbus.Close()
+}
+
+func (*bluetooth) isAdapter(objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant, path dbus.ObjectPath) bool {
+	var ok bool
+
+	_, ok = objects[path]["org.bluez.Adapter1"]
+
+	return ok
 }
 
 func (mod *bluetooth) getAdapter(path dbus.ObjectPath) (dbus.ObjectPath, error) {
