@@ -108,12 +108,16 @@ func (mod *cpu) Run() (json.RawMessage, error) {
 		return nil, err
 	}
 
+	avgUsage /= float64(len(mod.cores))
+
 	return json.Marshal(struct {
 		Cores    []cpuCore
+		Icon     string
 		AvgUsage float64
 	}{
 		Cores:    mod.cores,
-		AvgUsage: avgUsage / float64(len(mod.cores)),
+		Icon:     icon(mod.icons, 100, avgUsage),
+		AvgUsage: avgUsage,
 	})
 }
 
