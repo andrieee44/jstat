@@ -180,6 +180,21 @@ func (mod *internet) wifiStrength(iface string) (float64, error) {
 	return 0, errors.New("specified interface not found in /proc/net/wireless")
 }
 
+func (mod *internet) removeEth(ethIfaces []string) {
+	var oldEthIface, ethIface string
+
+start:
+	for oldEthIface = range mod.eth {
+		for _, ethIface = range ethIfaces {
+			if oldEthIface == filepath.Base(ethIface) {
+				continue start
+			}
+		}
+
+		mod.eth[oldEthIface].Powered = false
+	}
+}
+
 func (mod *internet) updateEth() error {
 	var (
 		ethIfaces []string
@@ -192,6 +207,8 @@ func (mod *internet) updateEth() error {
 	if err != nil {
 		return err
 	}
+
+	mod.removeEth(ethIfaces)
 
 	for _, ethIface = range ethIfaces {
 		ethIface = filepath.Base(ethIface)

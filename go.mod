@@ -11,7 +11,7 @@ require (
 	github.com/fhs/gompd/v2 v2.3.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/mdlayher/wifi v0.2.0
-	golang.org/x/sys v0.22.0
+	golang.org/x/sys v0.23.0
 )
 
 require (
@@ -22,5 +22,5 @@ require (
 	github.com/mdlayher/socket v0.5.1 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 )
