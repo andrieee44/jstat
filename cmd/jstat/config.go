@@ -7,7 +7,7 @@ import (
 )
 
 func newConfig() map[string]jstat.Module {
-	const limit int = 20
+	const limit int = 15
 
 	var diskPaths, batIcons, blockIcons, clockIcons, briIcons, volIcons, internetIcons []string
 
