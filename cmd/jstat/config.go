@@ -33,7 +33,7 @@ func newConfig() map[string]jstat.Module {
 		"Music":     jstat.NewMusic(500*time.Millisecond, "%AlbumArtist% - %Track% - %Album% - %Title%", limit),
 		"Internet":  jstat.NewInternet(500*time.Millisecond, time.Second, limit, internetIcons),
 		"Hyprland":  jstat.NewHyprland(500*time.Millisecond, limit),
-		"Bluetooth": jstat.NewBluetooth(500*time.Millisecond, limit, batIcons),
+		"Bluetooth": jstat.NewBluetooth(500*time.Millisecond, limit - 5, batIcons),
 		"NetSpd":    jstat.NewNetSpd(time.Second),
 	}
 }
