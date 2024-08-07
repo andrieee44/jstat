@@ -193,9 +193,11 @@ start:
 			}
 		}
 
-		mod.eth[oldEthIface].Powered = false
-		mod.eth[oldEthIface].Name = ""
-		mod.eth[oldEthIface].nameChan <- ""
+		if mod.eth[oldEthIface].Powered {
+			mod.eth[oldEthIface].Powered = false
+			mod.eth[oldEthIface].Name = ""
+			mod.eth[oldEthIface].nameChan <- ""
+		}
 	}
 }
 
