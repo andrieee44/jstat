@@ -228,7 +228,7 @@ func (mod *bluetooth) updateAdapter(path dbus.ObjectPath, iface string, members 
 			return err
 		}
 
-		mod.adapters[path].Discovering = powered
+		mod.adapters[path].Discovering = discovering
 	}
 
 	return nil
