@@ -18,10 +18,10 @@ type bluetoothDevice struct {
 }
 
 type bluetoothAdapter struct {
-	Name    string
-	Scroll  int
-	Powered bool
-	Devices map[dbus.ObjectPath]*bluetoothDevice
+	Name                 string
+	Scroll               int
+	Powered, Discovering bool
+	Devices              map[dbus.ObjectPath]*bluetoothDevice
 
 	nameChan chan<- string
 }
@@ -51,8 +51,8 @@ func (mod *bluetooth) Init() error {
 	}
 
 	mod.adapters = make(map[dbus.ObjectPath]*bluetoothAdapter)
-	mod.updatesChan = make(chan struct{}, 10)
-	mod.events = make(chan *dbus.Signal, 10)
+	mod.updatesChan = make(chan struct{}, 100)
+	mod.events = make(chan *dbus.Signal, 100)
 	mod.sysbus.Signal(mod.events)
 
 	err = mod.sysbus.Object("org.bluez", "/").Call("org.freedesktop.DBus.ObjectManager.GetManagedObjects", 0).Store(&objects)
@@ -191,9 +191,9 @@ func (mod *bluetooth) getAdapter(path dbus.ObjectPath) (dbus.ObjectPath, error) 
 
 func (mod *bluetooth) updateAdapter(path dbus.ObjectPath, iface string, members map[string]dbus.Variant) error {
 	var (
-		name        string
-		powered, ok bool
-		err         error
+		name                     string
+		powered, discovering, ok bool
+		err                      error
 	)
 
 	if iface != "org.bluez.Adapter1" {
@@ -219,6 +219,16 @@ func (mod *bluetooth) updateAdapter(path dbus.ObjectPath, iface string, members 
 		}
 
 		mod.adapters[path].Powered = powered
+	}
+
+	_, ok = members["Discovering"]
+	if ok {
+		err = members["Discovering"].Store(&discovering)
+		if err != nil {
+			return err
+		}
+
+		mod.adapters[path].Discovering = powered
 	}
 
 	return nil
