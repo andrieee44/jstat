@@ -51,8 +51,8 @@ func (mod *bluetooth) Init() error {
 	}
 
 	mod.adapters = make(map[dbus.ObjectPath]*bluetoothAdapter)
-	mod.updatesChan = make(chan struct{}, 100)
-	mod.events = make(chan *dbus.Signal, 100)
+	mod.updatesChan = make(chan struct{}, 10)
+	mod.events = make(chan *dbus.Signal, 10)
 	mod.sysbus.Signal(mod.events)
 
 	err = mod.sysbus.Object("org.bluez", "/").Call("org.freedesktop.DBus.ObjectManager.GetManagedObjects", 0).Store(&objects)

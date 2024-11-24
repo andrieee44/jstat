@@ -47,10 +47,10 @@ func (mod *hyprland) Init() error {
 		return err
 	}
 
-	mod.eventsChan = make(chan struct{})
+	mod.eventsChan = make(chan struct{}, 1)
 	go mod.eventsLoop()
 
-	mod.updatesChan = make(chan struct{}, 2)
+	mod.updatesChan = make(chan struct{}, 1)
 	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.scrollInterval, mod.limit)
 
 	return mod.updateInfo()
