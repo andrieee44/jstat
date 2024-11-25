@@ -11,17 +11,15 @@ import (
 )
 
 type cpuCore struct {
-	Freq  int
-	Usage float64
-
+	Freq      int
+	Usage     float64
 	sum, idle int
 }
 
 type cpu struct {
 	interval time.Duration
 	icons    []string
-
-	cores []cpuCore
+	cores    []cpuCore
 }
 
 func (mod *cpu) Init() error {

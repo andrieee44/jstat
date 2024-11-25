@@ -7,8 +7,7 @@ import (
 )
 
 type bri struct {
-	icons []string
-
+	icons   []string
 	watcher *fsnotify.Watcher
 	maxBri  int
 }
