@@ -66,12 +66,15 @@ func (mod *vol) Run() (json.RawMessage, error) {
 }
 
 func (mod *vol) Sleep() error {
+	var timer <-chan time.Time
+
 	<-mod.updates
+	timer = time.After(mod.opts.discardInterval)
 
 	for {
 		select {
 		case <-mod.updates:
-		case <-time.After(mod.opts.discardInterval):
+		case <-timer:
 			return nil
 		}
 	}
