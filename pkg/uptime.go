@@ -8,8 +8,12 @@ import (
 	"time"
 )
 
-type uptime struct {
+type uptimeOpts struct {
 	interval time.Duration
+}
+
+type uptime struct {
+	opts uptimeOpts
 }
 
 func (mod *uptime) Init() error {
@@ -43,7 +47,7 @@ func (mod *uptime) Run() (json.RawMessage, error) {
 }
 
 func (mod *uptime) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -53,5 +57,7 @@ func (mod *uptime) Cleanup() error {
 }
 
 func NewUptime(interval time.Duration) *uptime {
-	return &uptime{interval: interval}
+	return &uptime{
+		opts: uptimeOpts{interval: interval},
+	}
 }

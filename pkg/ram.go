@@ -5,9 +5,13 @@ import (
 	"time"
 )
 
-type ram struct {
+type ramOpts struct {
 	interval time.Duration
 	icons    []string
+}
+
+type ram struct {
+	opts ramOpts
 }
 
 func (mod *ram) Init() error {
@@ -40,12 +44,12 @@ func (mod *ram) Run() (json.RawMessage, error) {
 		Available: meminfo["MemAvailable"],
 		Used:      used,
 		UsedPerc:  usedPerc,
-		Icon:      icon(mod.icons, 100, usedPerc),
+		Icon:      icon(mod.opts.icons, 100, usedPerc),
 	})
 }
 
 func (mod *ram) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -56,7 +60,9 @@ func (mod *ram) Cleanup() error {
 
 func NewRam(interval time.Duration, icons []string) *ram {
 	return &ram{
-		interval: interval,
-		icons:    icons,
+		opts: ramOpts{
+			interval: interval,
+			icons:    icons,
+		},
 	}
 }

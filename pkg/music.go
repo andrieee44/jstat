@@ -8,11 +8,14 @@ import (
 	"github.com/fhs/gompd/v2/mpd"
 )
 
-type music struct {
+type musicOpts struct {
 	scrollInterval time.Duration
 	format         string
 	limit          int
+}
 
+type music struct {
+	opts        musicOpts
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
 	updatesChan chan struct{}
@@ -29,7 +32,7 @@ func (mod *music) Init() error {
 	}
 
 	mod.updatesChan = make(chan struct{}, 1)
-	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.scrollInterval, mod.limit)
+	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.opts.scrollInterval, mod.opts.limit)
 
 	return mod.updateInfo()
 }
@@ -42,7 +45,7 @@ func (mod *music) Run() (json.RawMessage, error) {
 		Song:   mod.song,
 		State:  mod.state,
 		Scroll: mod.scroll,
-		Limit:  mod.limit,
+		Limit:  mod.opts.limit,
 	})
 }
 
@@ -92,7 +95,7 @@ func (mod *music) updateInfo() error {
 	}
 
 	mod.state = status["state"]
-	mod.song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.format, func(key string) string {
+	mod.song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.opts.format, func(key string) string {
 		return song[key[1:len(key)-1]]
 	})
 
@@ -103,8 +106,10 @@ func (mod *music) updateInfo() error {
 
 func NewMusic(scrollInterval time.Duration, format string, limit int) *music {
 	return &music{
-		scrollInterval: scrollInterval,
-		format:         format,
-		limit:          limit,
+		opts: musicOpts{
+			scrollInterval: scrollInterval,
+			format:         format,
+			limit:          limit,
+		},
 	}
 }

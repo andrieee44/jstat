@@ -7,9 +7,13 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type disk struct {
+type diskOpts struct {
 	interval     time.Duration
 	paths, icons []string
+}
+
+type disk struct {
+	opts diskOpts
 }
 
 func (mod *disk) Init() error {
@@ -34,7 +38,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 
 	disks = make(map[string]diskStruct)
 
-	for _, path = range mod.paths {
+	for _, path = range mod.opts.paths {
 		err = unix.Statfs(path, &statfs)
 		if err != nil {
 			return nil, err
@@ -50,7 +54,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 			Total:    total,
 			Used:     used,
 			UsedPerc: usedPerc,
-			Icon:     icon(mod.icons, 100, usedPerc),
+			Icon:     icon(mod.opts.icons, 100, usedPerc),
 		}
 	}
 
@@ -58,7 +62,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 }
 
 func (mod *disk) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -69,8 +73,10 @@ func (mod *disk) Cleanup() error {
 
 func NewDisk(interval time.Duration, paths, icons []string) *disk {
 	return &disk{
-		interval: interval,
-		paths:    paths,
-		icons:    icons,
+		opts: diskOpts{
+			interval: interval,
+			paths:    paths,
+			icons:    icons,
+		},
 	}
 }

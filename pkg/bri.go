@@ -6,8 +6,12 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+type briOpts struct {
+	icons []string
+}
+
 type bri struct {
-	icons   []string
+	opts    briOpts
 	watcher *fsnotify.Watcher
 	maxBri  int
 }
@@ -52,7 +56,7 @@ func (mod *bri) Run() (json.RawMessage, error) {
 		Icon string
 	}{
 		Perc: perc,
-		Icon: icon(mod.icons, 100, perc),
+		Icon: icon(mod.opts.icons, 100, perc),
 	})
 }
 
@@ -80,6 +84,6 @@ func (mod *bri) Cleanup() error {
 
 func NewBri(icons []string) *bri {
 	return &bri{
-		icons: icons,
+		opts: briOpts{icons: icons},
 	}
 }

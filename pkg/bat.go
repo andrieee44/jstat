@@ -7,9 +7,13 @@ import (
 	"time"
 )
 
-type bat struct {
+type batOpts struct {
 	interval time.Duration
 	icons    []string
+}
+
+type bat struct {
+	opts batOpts
 }
 
 func (mod *bat) Init() error {
@@ -50,7 +54,7 @@ func (mod *bat) Run() (json.RawMessage, error) {
 		batsInfo = append(batsInfo, batInfo{
 			Name:     filepath.Base(path),
 			Status:   string(status[:len(status)-1]),
-			Icon:     icon(mod.icons, 100, float64(capacity)),
+			Icon:     icon(mod.opts.icons, 100, float64(capacity)),
 			Capacity: capacity,
 		})
 	}
@@ -59,7 +63,7 @@ func (mod *bat) Run() (json.RawMessage, error) {
 }
 
 func (mod *bat) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -70,7 +74,9 @@ func (mod *bat) Cleanup() error {
 
 func NewBat(interval time.Duration, icons []string) *bat {
 	return &bat{
-		interval: interval,
-		icons:    icons,
+		opts: batOpts{
+			interval: interval,
+			icons:    icons,
+		},
 	}
 }

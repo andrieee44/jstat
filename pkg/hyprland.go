@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+type hyprlandOpts struct {
+	scrollInterval time.Duration
+	limit          int
+}
+
 type hyprlandWorkspace struct {
 	Id   int
 	Name string
@@ -22,9 +27,7 @@ type hyprlandMonitor struct {
 }
 
 type hyprland struct {
-	scrollInterval time.Duration
-	limit          int
-
+	opts                    hyprlandOpts
 	socketPath, window      string
 	eventsConn              net.Conn
 	nameChan                chan<- string
@@ -51,7 +54,7 @@ func (mod *hyprland) Init() error {
 	go mod.eventsLoop()
 
 	mod.updatesChan = make(chan struct{}, 5)
-	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.scrollInterval, mod.limit)
+	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.opts.scrollInterval, mod.opts.limit)
 
 	return mod.updateInfo()
 }
@@ -65,7 +68,7 @@ func (mod *hyprland) Run() (json.RawMessage, error) {
 		Window:   mod.window,
 		Monitors: mod.monitors,
 		Scroll:   mod.scroll,
-		Limit:    mod.limit,
+		Limit:    mod.opts.limit,
 	})
 }
 
@@ -210,7 +213,9 @@ func (mod *hyprland) eventsLoop() {
 
 func NewHyprland(scrollInterval time.Duration, limit int) *hyprland {
 	return &hyprland{
-		scrollInterval: scrollInterval,
-		limit:          limit,
+		opts: hyprlandOpts{
+			scrollInterval: scrollInterval,
+			limit:          limit,
+		},
 	}
 }

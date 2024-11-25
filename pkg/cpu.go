@@ -10,16 +10,20 @@ import (
 	"time"
 )
 
+type cpuOpts struct {
+	interval time.Duration
+	icons    []string
+}
+
 type cpuCore struct {
-	Freq      int
-	Usage     float64
-	sum, idle int
+	Freq            int
+	Usage           float64
+	oldSum, oldIdle int
 }
 
 type cpu struct {
-	interval time.Duration
-	icons    []string
-	cores    []cpuCore
+	opts  cpuOpts
+	cores []cpuCore
 }
 
 func (mod *cpu) Init() error {
@@ -90,10 +94,10 @@ func (mod *cpu) Run() (json.RawMessage, error) {
 			sum += num
 		}
 
-		delta = sum - mod.cores[coreN].sum
-		mod.cores[coreN].Usage = float64(delta-(idle-mod.cores[coreN].idle)) / float64(delta) * 100
-		mod.cores[coreN].idle = idle
-		mod.cores[coreN].sum = sum
+		delta = sum - mod.cores[coreN].oldSum
+		mod.cores[coreN].Usage = float64(delta-(idle-mod.cores[coreN].oldIdle)) / float64(delta) * 100
+		mod.cores[coreN].oldIdle = idle
+		mod.cores[coreN].oldSum = sum
 		avgUsage += mod.cores[coreN].Usage
 	}
 
@@ -114,13 +118,13 @@ func (mod *cpu) Run() (json.RawMessage, error) {
 		AvgUsage float64
 	}{
 		Cores:    mod.cores,
-		Icon:     icon(mod.icons, 100, avgUsage),
+		Icon:     icon(mod.opts.icons, 100, avgUsage),
 		AvgUsage: avgUsage,
 	})
 }
 
 func (mod *cpu) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -131,7 +135,9 @@ func (mod *cpu) Cleanup() error {
 
 func NewCpu(interval time.Duration, icons []string) *cpu {
 	return &cpu{
-		interval: interval,
-		icons:    icons,
+		opts: cpuOpts{
+			interval: interval,
+			icons:    icons,
+		},
 	}
 }

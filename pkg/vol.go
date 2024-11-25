@@ -7,10 +7,13 @@ import (
 	"github.com/mafik/pulseaudio"
 )
 
-type vol struct {
+type volOpts struct {
 	discardInterval time.Duration
 	icons           []string
+}
 
+type vol struct {
+	opts    volOpts
 	client  *pulseaudio.Client
 	updates <-chan struct{}
 }
@@ -58,7 +61,7 @@ func (mod *vol) Run() (json.RawMessage, error) {
 	}{
 		Perc: volumePerc,
 		Mute: mute,
-		Icon: icon(mod.icons, 100, volumePerc),
+		Icon: icon(mod.opts.icons, 100, volumePerc),
 	})
 }
 
@@ -68,7 +71,7 @@ func (mod *vol) Sleep() error {
 	for {
 		select {
 		case <-mod.updates:
-		case <-time.After(mod.discardInterval):
+		case <-time.After(mod.opts.discardInterval):
 			return nil
 		}
 	}
@@ -82,7 +85,9 @@ func (mod *vol) Cleanup() error {
 
 func NewVol(discardInterval time.Duration, icons []string) *vol {
 	return &vol{
-		discardInterval: discardInterval,
-		icons:           icons,
+		opts: volOpts{
+			discardInterval: discardInterval,
+			icons:           icons,
+		},
 	}
 }

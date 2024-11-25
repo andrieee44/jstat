@@ -5,9 +5,13 @@ import (
 	"time"
 )
 
-type swap struct {
+type swapOpts struct {
 	interval time.Duration
 	icons    []string
+}
+
+type swap struct {
+	opts swapOpts
 }
 
 func (mod *swap) Init() error {
@@ -39,12 +43,12 @@ func (mod *swap) Run() (json.RawMessage, error) {
 		Free:     meminfo["SwapFree"],
 		Used:     used,
 		UsedPerc: usedPerc,
-		Icon:     icon(mod.icons, 100, usedPerc),
+		Icon:     icon(mod.opts.icons, 100, usedPerc),
 	})
 }
 
 func (mod *swap) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -55,7 +59,9 @@ func (mod *swap) Cleanup() error {
 
 func NewSwap(interval time.Duration, icons []string) *swap {
 	return &swap{
-		interval: interval,
-		icons:    icons,
+		opts: swapOpts{
+			interval: interval,
+			icons:    icons,
+		},
 	}
 }

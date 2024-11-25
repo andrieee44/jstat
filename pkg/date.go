@@ -5,10 +5,14 @@ import (
 	"time"
 )
 
-type date struct {
+type dateOpts struct {
 	interval time.Duration
 	format   string
 	icons    []string
+}
+
+type date struct {
+	opts dateOpts
 }
 
 func (mod *date) Init() error {
@@ -31,13 +35,13 @@ func (mod *date) Run() (json.RawMessage, error) {
 	return json.Marshal(struct {
 		Icon, Date string
 	}{
-		Icon: icon(mod.icons, 12, float64(hour)),
-		Date: date.Format(mod.format),
+		Icon: icon(mod.opts.icons, 12, float64(hour)),
+		Date: date.Format(mod.opts.format),
 	})
 }
 
 func (mod *date) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -48,8 +52,10 @@ func (mod *date) Cleanup() error {
 
 func NewDate(interval time.Duration, format string, icons []string) *date {
 	return &date{
-		interval: interval,
-		format:   format,
-		icons:    icons,
+		opts: dateOpts{
+			interval: interval,
+			format:   format,
+			icons:    icons,
+		},
 	}
 }

@@ -6,10 +6,13 @@ import (
 	"time"
 )
 
-type netSpd struct {
+type netSpdOpts struct {
 	interval time.Duration
+}
 
-	up, down int
+type netSpd struct {
+	opts           netSpdOpts
+	oldUp, oldDown int
 }
 
 func (mod *netSpd) Init() error {
@@ -18,35 +21,35 @@ func (mod *netSpd) Init() error {
 
 func (mod *netSpd) Run() (json.RawMessage, error) {
 	var (
-		sumUp, sumDown, up, down int
-		err                      error
+		up, down, deltaUp, deltaDown int
+		err                          error
 	)
 
-	sumUp, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/tx_bytes")
+	up, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/tx_bytes")
 	if err != nil {
 		return nil, err
 	}
 
-	sumDown, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/rx_bytes")
+	down, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/rx_bytes")
 	if err != nil {
 		return nil, err
 	}
 
-	up = sumUp - mod.up
-	down = sumDown - mod.down
-	mod.up = sumUp
-	mod.down = sumDown
+	deltaUp = up - mod.oldUp
+	deltaDown = down - mod.oldDown
+	mod.oldUp = up
+	mod.oldDown = down
 
 	return json.Marshal(struct {
 		Up, Down int
 	}{
-		Up:   up,
-		Down: down,
+		Up:   deltaUp,
+		Down: deltaDown,
 	})
 }
 
 func (mod *netSpd) Sleep() error {
-	time.Sleep(mod.interval)
+	time.Sleep(mod.opts.interval)
 
 	return nil
 }
@@ -82,6 +85,8 @@ func (*netSpd) sumFiles(pattern string) (int, error) {
 
 func NewNetSpd(interval time.Duration) *netSpd {
 	return &netSpd{
-		interval: interval,
+		opts: netSpdOpts{
+			interval: interval,
+		},
 	}
 }

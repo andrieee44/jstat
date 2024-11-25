@@ -13,11 +13,16 @@ import (
 	"github.com/mdlayher/wifi"
 )
 
-type ethInfo struct {
-	Name    string
-	Powered bool
-	Scroll  int
+type internetOpts struct {
+	interval, scrollInterval time.Duration
+	limit                    int
+	icons                    []string
+}
 
+type ethInfo struct {
+	Name     string
+	Powered  bool
+	Scroll   int
 	nameChan chan<- string
 }
 
@@ -26,15 +31,11 @@ type wifiInfo struct {
 	Powered, Scanning bool
 	Scroll            int
 	Strength          float64
-
-	nameChan chan<- string
+	nameChan          chan<- string
 }
 
 type internet struct {
-	interval, scrollInterval time.Duration
-	limit                    int
-	icons                    []string
-
+	opts                   internetOpts
 	eth                    map[string]*ethInfo
 	wifi                   map[string]*wifiInfo
 	updatesChan, timerChan chan struct{}
@@ -71,7 +72,7 @@ func (mod *internet) Run() (json.RawMessage, error) {
 	}{
 		Ethernet: mod.eth,
 		Wifi:     mod.wifi,
-		Limit:    mod.limit,
+		Limit:    mod.opts.limit,
 	})
 }
 
@@ -97,7 +98,7 @@ func (mod *internet) Cleanup() error {
 
 func (mod *internet) timerLoop() {
 	for {
-		time.Sleep(mod.interval)
+		time.Sleep(mod.opts.interval)
 		mod.timerChan <- struct{}{}
 	}
 }
@@ -222,7 +223,7 @@ func (mod *internet) updateEth() error {
 		if !ok {
 			mod.eth[ethIface] = new(ethInfo)
 			mod.eth[ethIface].Name = ethIface
-			mod.eth[ethIface].nameChan = scrollEvent(mod.updatesChan, &mod.eth[ethIface].Scroll, mod.scrollInterval, mod.limit)
+			mod.eth[ethIface].nameChan = scrollEvent(mod.updatesChan, &mod.eth[ethIface].Scroll, mod.opts.scrollInterval, mod.opts.limit)
 			mod.eth[ethIface].nameChan <- ethIface
 		}
 
@@ -268,7 +269,7 @@ func (mod *internet) updateWifi() error {
 		_, ok = mod.wifi[wifiIface.Name]
 		if !ok {
 			mod.wifi[wifiIface.Name] = new(wifiInfo)
-			mod.wifi[wifiIface.Name].nameChan = scrollEvent(mod.updatesChan, &mod.wifi[wifiIface.Name].Scroll, mod.scrollInterval, mod.limit)
+			mod.wifi[wifiIface.Name].nameChan = scrollEvent(mod.updatesChan, &mod.wifi[wifiIface.Name].Scroll, mod.opts.scrollInterval, mod.opts.limit)
 		}
 
 		mod.wifi[wifiIface.Name].Powered, err = mod.isPowered(wifiIface.Name)
@@ -290,7 +291,7 @@ func (mod *internet) updateWifi() error {
 			return err
 		}
 
-		mod.wifi[wifiIface.Name].Icon = icon(mod.icons, 100, mod.wifi[wifiIface.Name].Strength)
+		mod.wifi[wifiIface.Name].Icon = icon(mod.opts.icons, 100, mod.wifi[wifiIface.Name].Strength)
 
 		bss, err = mod.client.BSS(wifiIface)
 		if err != nil {
@@ -308,9 +309,11 @@ func (mod *internet) updateWifi() error {
 
 func NewInternet(interval, scrollInterval time.Duration, limit int, icons []string) *internet {
 	return &internet{
-		scrollInterval: scrollInterval,
-		interval:       interval,
-		limit:          limit,
-		icons:          icons,
+		opts: internetOpts{
+			scrollInterval: scrollInterval,
+			interval:       interval,
+			limit:          limit,
+			icons:          icons,
+		},
 	}
 }

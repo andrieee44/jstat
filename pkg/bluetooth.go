@@ -9,12 +9,17 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
+type bluetoothOpts struct {
+	scrollInterval time.Duration
+	limit          int
+	icons          []string
+}
+
 type bluetoothDevice struct {
 	Name, Icon      string
 	Battery, Scroll int
 	Connected       bool
-
-	nameChan chan<- string
+	nameChan        chan<- string
 }
 
 type bluetoothAdapter struct {
@@ -22,15 +27,11 @@ type bluetoothAdapter struct {
 	Scroll               int
 	Powered, Discovering bool
 	Devices              map[dbus.ObjectPath]*bluetoothDevice
-
-	nameChan chan<- string
+	nameChan             chan<- string
 }
 
 type bluetooth struct {
-	scrollInterval time.Duration
-	limit          int
-	icons          []string
-
+	opts        bluetoothOpts
 	sysbus      *dbus.Conn
 	adapters    map[dbus.ObjectPath]*bluetoothAdapter
 	updatesChan chan struct{}
@@ -107,7 +108,7 @@ func (mod *bluetooth) Run() (json.RawMessage, error) {
 		Limit    int
 	}{
 		Adapters: mod.adapters,
-		Limit:    mod.limit,
+		Limit:    mod.opts.limit,
 	})
 }
 
@@ -282,7 +283,7 @@ func (mod *bluetooth) updateDevice(adapter, path dbus.ObjectPath, iface string, 
 		}
 
 		mod.adapters[adapter].Devices[path].Battery = percentage
-		mod.adapters[adapter].Devices[path].Icon = icon(mod.icons, 100, float64(percentage))
+		mod.adapters[adapter].Devices[path].Icon = icon(mod.opts.icons, 100, float64(percentage))
 	}
 
 	return nil
@@ -300,7 +301,7 @@ func (mod *bluetooth) addAdapter(path dbus.ObjectPath, object map[string]map[str
 	}
 
 	mod.adapters[path] = new(bluetoothAdapter)
-	mod.adapters[path].nameChan = scrollEvent(mod.updatesChan, &mod.adapters[path].Scroll, mod.scrollInterval, mod.limit)
+	mod.adapters[path].nameChan = scrollEvent(mod.updatesChan, &mod.adapters[path].Scroll, mod.opts.scrollInterval, mod.opts.limit)
 
 	err = mod.updateAdapter(path, "org.bluez.Adapter1", object["org.bluez.Adapter1"])
 	if err != nil {
@@ -343,9 +344,9 @@ func (mod *bluetooth) addDevice(path dbus.ObjectPath, object map[string]map[stri
 	}
 
 	mod.adapters[adapter].Devices[path] = new(bluetoothDevice)
-	mod.adapters[adapter].Devices[path].nameChan = scrollEvent(mod.updatesChan, &mod.adapters[adapter].Devices[path].Scroll, mod.scrollInterval, mod.limit)
+	mod.adapters[adapter].Devices[path].nameChan = scrollEvent(mod.updatesChan, &mod.adapters[adapter].Devices[path].Scroll, mod.opts.scrollInterval, mod.opts.limit)
 	mod.adapters[adapter].Devices[path].Battery = percentage
-	mod.adapters[adapter].Devices[path].Icon = icon(mod.icons, 100, float64(percentage))
+	mod.adapters[adapter].Devices[path].Icon = icon(mod.opts.icons, 100, float64(percentage))
 
 	err = mod.updateDevice(adapter, path, "org.bluez.Device1", object["org.bluez.Device1"])
 	if err != nil {
@@ -359,8 +360,10 @@ func (mod *bluetooth) addDevice(path dbus.ObjectPath, object map[string]map[stri
 
 func NewBluetooth(scrollInterval time.Duration, limit int, icons []string) *bluetooth {
 	return &bluetooth{
-		scrollInterval: scrollInterval,
-		limit:          limit,
-		icons:          icons,
+		opts: bluetoothOpts{
+			scrollInterval: scrollInterval,
+			limit:          limit,
+			icons:          icons,
+		},
 	}
 }
