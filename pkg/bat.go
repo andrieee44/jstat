@@ -12,26 +12,26 @@ type batOpts struct {
 	icons    []string
 }
 
+type batInfo struct {
+	Status, Icon string
+	Capacity     int
+}
+
 type bat struct {
-	opts batOpts
+	opts       batOpts
+	batInfoMap map[string]batInfo
 }
 
 func (mod *bat) Init() error {
+	mod.batInfoMap = make(map[string]batInfo)
+
 	return nil
 }
 
 func (mod *bat) Run() (json.RawMessage, error) {
-	type batInfo struct {
-		Name, Status, Icon string
-		Capacity           int
-	}
-
 	var (
 		batsPath []string
-		batsInfo []batInfo
 		path     string
-		status   []byte
-		capacity int
 		err      error
 	)
 
@@ -41,25 +41,13 @@ func (mod *bat) Run() (json.RawMessage, error) {
 	}
 
 	for _, path = range batsPath {
-		status, err = os.ReadFile(filepath.Join(path, "status"))
+		err = mod.setBatInfo(path)
 		if err != nil {
 			return nil, err
 		}
-
-		capacity, err = fileAtoi(filepath.Join(path, "capacity"))
-		if err != nil {
-			return nil, err
-		}
-
-		batsInfo = append(batsInfo, batInfo{
-			Name:     filepath.Base(path),
-			Status:   string(status[:len(status)-1]),
-			Icon:     icon(mod.opts.icons, 100, float64(capacity)),
-			Capacity: capacity,
-		})
 	}
 
-	return json.Marshal(batsInfo)
+	return json.Marshal(mod.batInfoMap)
 }
 
 func (mod *bat) Sleep() error {
@@ -69,6 +57,32 @@ func (mod *bat) Sleep() error {
 }
 
 func (mod *bat) Cleanup() error {
+	return nil
+}
+
+func (mod *bat) setBatInfo(path string) error {
+	var (
+		status   []byte
+		capacity int
+		err      error
+	)
+
+	status, err = os.ReadFile(filepath.Join(path, "status"))
+	if err != nil {
+		return err
+	}
+
+	capacity, err = fileAtoi(filepath.Join(path, "capacity"))
+	if err != nil {
+		return err
+	}
+
+	mod.batInfoMap[filepath.Base(path)] = batInfo{
+		Status:   string(status[:len(status)-1]),
+		Icon:     icon(mod.opts.icons, 100, float64(capacity)),
+		Capacity: capacity,
+	}
+
 	return nil
 }
 
