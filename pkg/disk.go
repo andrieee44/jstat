@@ -21,22 +21,22 @@ func (mod *disk) Init() error {
 }
 
 func (mod *disk) Run() (json.RawMessage, error) {
-	type diskStruct struct {
+	type diskInfo struct {
 		Free, Total, Used int
 		UsedPerc          float64
 		Icon              string
 	}
 
 	var (
-		statfs            unix.Statfs_t
-		disks             map[string]diskStruct
+		diskInfoMap       map[string]*diskInfo
 		path              string
+		statfs            unix.Statfs_t
 		free, total, used int
 		usedPerc          float64
 		err               error
 	)
 
-	disks = make(map[string]diskStruct)
+	diskInfoMap = make(map[string]*diskInfo)
 
 	for _, path = range mod.opts.paths {
 		err = unix.Statfs(path, &statfs)
@@ -49,7 +49,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 		used = total - free
 		usedPerc = float64(used) / float64(total) * 100
 
-		disks[path] = diskStruct{
+		diskInfoMap[path] = &diskInfo{
 			Free:     free,
 			Total:    total,
 			Used:     used,
@@ -58,7 +58,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 		}
 	}
 
-	return json.Marshal(disks)
+	return json.Marshal(diskInfoMap)
 }
 
 func (mod *disk) Sleep() error {
