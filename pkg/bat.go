@@ -19,11 +19,11 @@ type batInfo struct {
 
 type bat struct {
 	opts       batOpts
-	batInfoMap map[string]batInfo
+	batInfoMap map[string]*batInfo
 }
 
 func (mod *bat) Init() error {
-	mod.batInfoMap = make(map[string]batInfo)
+	mod.batInfoMap = make(map[string]*batInfo)
 
 	return nil
 }
@@ -64,6 +64,8 @@ func (mod *bat) setBatInfo(path string) error {
 	var (
 		status   []byte
 		capacity int
+		bat      *batInfo
+		ok       bool
 		err      error
 	)
 
@@ -77,11 +79,15 @@ func (mod *bat) setBatInfo(path string) error {
 		return err
 	}
 
-	mod.batInfoMap[filepath.Base(path)] = batInfo{
-		Status:   string(status[:len(status)-1]),
-		Icon:     icon(mod.opts.icons, 100, float64(capacity)),
-		Capacity: capacity,
+	bat, ok = mod.batInfoMap[filepath.Base(path)]
+	if !ok {
+		mod.batInfoMap[filepath.Base(path)] = &batInfo{}
+		bat = mod.batInfoMap[filepath.Base(path)]
 	}
+
+	bat.Status = string(status[:len(status)-1])
+	bat.Icon = icon(mod.opts.icons, 100, float64(capacity))
+	bat.Capacity = capacity
 
 	return nil
 }
