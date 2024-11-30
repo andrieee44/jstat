@@ -11,7 +11,7 @@ type swapOpts struct {
 }
 
 type swap struct {
-	opts swapOpts
+	opts *swapOpts
 }
 
 func (mod *swap) Init() error {
@@ -59,7 +59,7 @@ func (mod *swap) Cleanup() error {
 
 func NewSwap(interval time.Duration, icons []string) *swap {
 	return &swap{
-		opts: swapOpts{
+		opts: &swapOpts{
 			interval: interval,
 			icons:    icons,
 		},

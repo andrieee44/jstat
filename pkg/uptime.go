@@ -13,7 +13,7 @@ type uptimeOpts struct {
 }
 
 type uptime struct {
-	opts uptimeOpts
+	opts *uptimeOpts
 }
 
 func (mod *uptime) Init() error {
@@ -58,6 +58,6 @@ func (mod *uptime) Cleanup() error {
 
 func NewUptime(interval time.Duration) *uptime {
 	return &uptime{
-		opts: uptimeOpts{interval: interval},
+		opts: &uptimeOpts{interval: interval},
 	}
 }

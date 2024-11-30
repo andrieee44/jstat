@@ -11,7 +11,7 @@ type netSpdOpts struct {
 }
 
 type netSpd struct {
-	opts           netSpdOpts
+	opts           *netSpdOpts
 	oldUp, oldDown int
 }
 
@@ -85,7 +85,7 @@ func (*netSpd) sumFiles(pattern string) (int, error) {
 
 func NewNetSpd(interval time.Duration) *netSpd {
 	return &netSpd{
-		opts: netSpdOpts{
+		opts: &netSpdOpts{
 			interval: interval,
 		},
 	}

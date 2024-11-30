@@ -31,7 +31,7 @@ type bluetoothAdapter struct {
 }
 
 type bluetooth struct {
-	opts        bluetoothOpts
+	opts        *bluetoothOpts
 	sysbus      *dbus.Conn
 	adapters    map[dbus.ObjectPath]*bluetoothAdapter
 	updatesChan chan struct{}
@@ -360,7 +360,7 @@ func (mod *bluetooth) addDevice(path dbus.ObjectPath, object map[string]map[stri
 
 func NewBluetooth(scrollInterval time.Duration, limit int, icons []string) *bluetooth {
 	return &bluetooth{
-		opts: bluetoothOpts{
+		opts: &bluetoothOpts{
 			scrollInterval: scrollInterval,
 			limit:          limit,
 			icons:          icons,

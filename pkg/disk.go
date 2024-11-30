@@ -13,7 +13,7 @@ type diskOpts struct {
 }
 
 type disk struct {
-	opts diskOpts
+	opts *diskOpts
 }
 
 func (mod *disk) Init() error {
@@ -73,7 +73,7 @@ func (mod *disk) Cleanup() error {
 
 func NewDisk(interval time.Duration, paths, icons []string) *disk {
 	return &disk{
-		opts: diskOpts{
+		opts: &diskOpts{
 			interval: interval,
 			paths:    paths,
 			icons:    icons,

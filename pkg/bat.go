@@ -18,7 +18,7 @@ type batInfo struct {
 }
 
 type bat struct {
-	opts batOpts
+	opts *batOpts
 }
 
 func (mod *bat) Init() error {
@@ -86,7 +86,7 @@ func (mod *bat) getBatInfo(path string) (*batInfo, error) {
 
 func NewBat(interval time.Duration, icons []string) *bat {
 	return &bat{
-		opts: batOpts{
+		opts: &batOpts{
 			interval: interval,
 			icons:    icons,
 		},

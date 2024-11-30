@@ -15,7 +15,7 @@ type musicOpts struct {
 }
 
 type music struct {
-	opts        musicOpts
+	opts        *musicOpts
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
 	updatesChan chan struct{}
@@ -106,7 +106,7 @@ func (mod *music) updateInfo() error {
 
 func NewMusic(scrollInterval time.Duration, format string, limit int) *music {
 	return &music{
-		opts: musicOpts{
+		opts: &musicOpts{
 			scrollInterval: scrollInterval,
 			format:         format,
 			limit:          limit,

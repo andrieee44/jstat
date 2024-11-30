@@ -13,7 +13,7 @@ type volOpts struct {
 }
 
 type vol struct {
-	opts    volOpts
+	opts    *volOpts
 	client  *pulseaudio.Client
 	updates <-chan struct{}
 }
@@ -88,7 +88,7 @@ func (mod *vol) Cleanup() error {
 
 func NewVol(discardInterval time.Duration, icons []string) *vol {
 	return &vol{
-		opts: volOpts{
+		opts: &volOpts{
 			discardInterval: discardInterval,
 			icons:           icons,
 		},

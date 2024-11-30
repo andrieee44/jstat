@@ -12,7 +12,7 @@ type dateOpts struct {
 }
 
 type date struct {
-	opts dateOpts
+	opts *dateOpts
 }
 
 func (mod *date) Init() error {
@@ -52,7 +52,7 @@ func (mod *date) Cleanup() error {
 
 func NewDate(interval time.Duration, format string, icons []string) *date {
 	return &date{
-		opts: dateOpts{
+		opts: &dateOpts{
 			interval: interval,
 			format:   format,
 			icons:    icons,

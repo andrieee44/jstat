@@ -35,7 +35,7 @@ type wifiInfo struct {
 }
 
 type internet struct {
-	opts                   internetOpts
+	opts                   *internetOpts
 	eth                    map[string]*ethInfo
 	wifi                   map[string]*wifiInfo
 	updatesChan, timerChan chan struct{}
@@ -309,7 +309,7 @@ func (mod *internet) updateWifi() error {
 
 func NewInternet(interval, scrollInterval time.Duration, limit int, icons []string) *internet {
 	return &internet{
-		opts: internetOpts{
+		opts: &internetOpts{
 			scrollInterval: scrollInterval,
 			interval:       interval,
 			limit:          limit,

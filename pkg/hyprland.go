@@ -27,7 +27,7 @@ type hyprlandMonitor struct {
 }
 
 type hyprland struct {
-	opts                    hyprlandOpts
+	opts                    *hyprlandOpts
 	socketPath, window      string
 	eventsConn              net.Conn
 	nameChan                chan<- string
@@ -213,7 +213,7 @@ func (mod *hyprland) eventsLoop() {
 
 func NewHyprland(scrollInterval time.Duration, limit int) *hyprland {
 	return &hyprland{
-		opts: hyprlandOpts{
+		opts: &hyprlandOpts{
 			scrollInterval: scrollInterval,
 			limit:          limit,
 		},

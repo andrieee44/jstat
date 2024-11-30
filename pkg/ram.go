@@ -11,7 +11,7 @@ type ramOpts struct {
 }
 
 type ram struct {
-	opts ramOpts
+	opts *ramOpts
 }
 
 func (mod *ram) Init() error {
@@ -60,7 +60,7 @@ func (mod *ram) Cleanup() error {
 
 func NewRam(interval time.Duration, icons []string) *ram {
 	return &ram{
-		opts: ramOpts{
+		opts: &ramOpts{
 			interval: interval,
 			icons:    icons,
 		},

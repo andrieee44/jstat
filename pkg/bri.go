@@ -11,7 +11,7 @@ type briOpts struct {
 }
 
 type bri struct {
-	opts    briOpts
+	opts    *briOpts
 	watcher *fsnotify.Watcher
 	maxBri  int
 }
@@ -84,6 +84,6 @@ func (mod *bri) Cleanup() error {
 
 func NewBri(icons []string) *bri {
 	return &bri{
-		opts: briOpts{icons: icons},
+		opts: &briOpts{icons: icons},
 	}
 }

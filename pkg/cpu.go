@@ -22,7 +22,7 @@ type cpuCore struct {
 }
 
 type cpu struct {
-	opts  cpuOpts
+	opts  *cpuOpts
 	cores map[int]*cpuCore
 }
 
@@ -145,7 +145,7 @@ func (mod *cpu) setCore(fields []string) (float64, error) {
 
 func NewCpu(interval time.Duration, icons []string) *cpu {
 	return &cpu{
-		opts: cpuOpts{
+		opts: &cpuOpts{
 			interval: interval,
 			icons:    icons,
 		},
