@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -19,14 +20,12 @@ type internetOpts struct {
 	icons                    []string
 }
 
-type ethInfo struct {
-	Name     string
-	Powered  bool
-	Scroll   int
-	nameChan chan<- string
+type internetOutput struct {
+	Internets map[string]*internetInfo
+	Limit     int
 }
 
-type wifiInfo struct {
+type internetInfo struct {
 	Name, Icon        string
 	Powered, Scanning bool
 	Scroll            int
@@ -35,28 +34,23 @@ type wifiInfo struct {
 }
 
 type internet struct {
-	opts                   *internetOpts
-	eth                    map[string]*ethInfo
-	wifi                   map[string]*wifiInfo
-	updatesChan, timerChan chan struct{}
-	client                 *wifi.Client
+	opts        *internetOpts
+	output      *internetOutput
+	updatesChan chan func()
+	client      *wifi.Client
 }
 
 func (mod *internet) Init() error {
 	var err error
 
-	mod.eth = make(map[string]*ethInfo)
-	mod.wifi = make(map[string]*wifiInfo)
-	mod.updatesChan = make(chan struct{}, 1)
-	mod.timerChan = make(chan struct{})
-	go mod.timerLoop()
-
-	mod.client, err = wifi.New()
-	if err != nil {
-		return err
+	mod.output = &internetOutput{
+		Internets: make(map[string]*internetInfo),
+		Limit:     mod.opts.limit,
 	}
 
-	err = mod.updateEth()
+	mod.updatesChan = make(chan func())
+
+	mod.client, err = wifi.New()
 	if err != nil {
 		return err
 	}
@@ -65,56 +59,30 @@ func (mod *internet) Init() error {
 }
 
 func (mod *internet) Run() (json.RawMessage, error) {
-	return json.Marshal(struct {
-		Ethernet map[string]*ethInfo
-		Wifi     map[string]*wifiInfo
-		Limit    int
-	}{
-		Ethernet: mod.eth,
-		Wifi:     mod.wifi,
-		Limit:    mod.opts.limit,
-	})
+	return json.Marshal(mod.output)
 }
 
 func (mod *internet) Sleep() error {
-	var err error
+	var fn func()
 
 	select {
-	case <-mod.timerChan:
-		err = mod.updateEth()
-		if err != nil {
-			return err
-		}
+	case fn = <-mod.updatesChan:
+		fn()
 
-		return mod.updateWifi()
-	case <-mod.updatesChan:
 		return nil
+	case <-time.After(mod.opts.interval):
+		return mod.updateWifi()
 	}
 }
 
 func (mod *internet) Cleanup() error {
+	var net *internetInfo
+
+	for _, net = range mod.output.Internets {
+		close(net.nameChan)
+	}
+
 	return mod.client.Close()
-}
-
-func (mod *internet) timerLoop() {
-	for {
-		time.Sleep(mod.opts.interval)
-		mod.timerChan <- struct{}{}
-	}
-}
-
-func (mod *internet) isPowered(iface string) (bool, error) {
-	var (
-		operstate []byte
-		err       error
-	)
-
-	operstate, err = os.ReadFile(filepath.Join("/sys/class/net", iface, "operstate"))
-	if err != nil {
-		return false, err
-	}
-
-	return string(operstate[:len(operstate)-1]) == "up", nil
 }
 
 func (mod *internet) isScanning(iface string) (bool, error) {
@@ -128,10 +96,10 @@ func (mod *internet) isScanning(iface string) (bool, error) {
 		return false, err
 	}
 
-	return string(flags[:len(flags)-1]) == "0x1003", nil
+	return string(flags) == "0x1003\n", nil
 }
 
-func (mod *internet) wifiStrength(iface string) (float64, error) {
+func (mod *internet) strength(iface string) (float64, error) {
 	var (
 		wireless *os.File
 		err      error
@@ -180,77 +148,14 @@ func (mod *internet) wifiStrength(iface string) (float64, error) {
 		return strength / 70 * 100, nil
 	}
 
-	return 0, errors.New("specified interface not found in /proc/net/wireless")
-}
-
-func (mod *internet) removeEth(ethIfaces []string) {
-	var oldEthIface, ethIface string
-
-start:
-	for oldEthIface = range mod.eth {
-		for _, ethIface = range ethIfaces {
-			if oldEthIface == filepath.Base(ethIface) {
-				continue start
-			}
-		}
-
-		if mod.eth[oldEthIface].Powered {
-			mod.eth[oldEthIface].Powered = false
-			mod.eth[oldEthIface].Name = ""
-			mod.eth[oldEthIface].nameChan <- ""
-		}
-	}
-}
-
-func (mod *internet) updateEth() error {
-	var (
-		ethIfaces []string
-		ethIface  string
-		ok        bool
-		err       error
-	)
-
-	ethIfaces, err = filepath.Glob("/sys/class/net/e*")
-	if err != nil {
-		return err
-	}
-
-	mod.removeEth(ethIfaces)
-
-	for _, ethIface = range ethIfaces {
-		ethIface = filepath.Base(ethIface)
-		_, ok = mod.eth[ethIface]
-		if !ok {
-			mod.eth[ethIface] = new(ethInfo)
-			mod.eth[ethIface].Name = ethIface
-			mod.eth[ethIface].nameChan = scrollEvent(mod.updatesChan, &mod.eth[ethIface].Scroll, mod.opts.scrollInterval, mod.opts.limit)
-			mod.eth[ethIface].nameChan <- ethIface
-		}
-
-		mod.eth[ethIface].Powered, err = mod.isPowered(ethIface)
-		if err != nil {
-			return err
-		}
-
-		if !mod.eth[ethIface].Powered {
-			mod.eth[ethIface].Name = ""
-			mod.eth[ethIface].nameChan <- ""
-			continue
-		}
-
-		if mod.eth[ethIface].Name == "" {
-			mod.eth[ethIface].Name = ethIface
-			mod.eth[ethIface].nameChan <- ethIface
-		}
-	}
-
-	return nil
+	return 0, fmt.Errorf("%s: not found in /proc/net/wireless", iface)
 }
 
 func (mod *internet) updateWifi() error {
 	var (
 		wifiIfaces []*wifi.Interface
 		wifiIface  *wifi.Interface
+		info       *internetInfo
 		bss        *wifi.BSS
 		ok         bool
 		err        error
@@ -266,19 +171,20 @@ func (mod *internet) updateWifi() error {
 			continue
 		}
 
-		_, ok = mod.wifi[wifiIface.Name]
+		info, ok = mod.output.Internets[wifiIface.Name]
 		if !ok {
-			mod.wifi[wifiIface.Name] = new(wifiInfo)
-			mod.wifi[wifiIface.Name].nameChan = scrollEvent(mod.updatesChan, &mod.wifi[wifiIface.Name].Scroll, mod.opts.scrollInterval, mod.opts.limit)
+			mod.output.Internets[wifiIface.Name] = new(internetInfo)
+			info = mod.output.Internets[wifiIface.Name]
+			info.nameChan = scrollEvent(mod.updatesChan, &info.Scroll, mod.opts.scrollInterval, mod.opts.limit)
 		}
 
-		mod.wifi[wifiIface.Name].Powered, err = mod.isPowered(wifiIface.Name)
+		info.Powered, err = isIfacePowered(wifiIface.Name)
 		if err != nil {
 			return err
 		}
 
-		if !mod.wifi[wifiIface.Name].Powered {
-			mod.wifi[wifiIface.Name].Scanning, err = mod.isScanning(wifiIface.Name)
+		if !info.Powered {
+			info.Scanning, err = mod.isScanning(wifiIface.Name)
 			if err != nil {
 				return err
 			}
@@ -286,22 +192,22 @@ func (mod *internet) updateWifi() error {
 			continue
 		}
 
-		mod.wifi[wifiIface.Name].Strength, err = mod.wifiStrength(wifiIface.Name)
+		info.Strength, err = mod.strength(wifiIface.Name)
 		if err != nil {
 			return err
 		}
-
-		mod.wifi[wifiIface.Name].Icon = icon(mod.opts.icons, 100, mod.wifi[wifiIface.Name].Strength)
 
 		bss, err = mod.client.BSS(wifiIface)
 		if err != nil {
 			return err
 		}
 
-		if mod.wifi[wifiIface.Name].Name != bss.SSID {
-			mod.wifi[wifiIface.Name].Name = bss.SSID
-			mod.wifi[wifiIface.Name].nameChan <- bss.SSID
+		if info.Name != bss.SSID {
+			info.Name = bss.SSID
+			info.nameChan <- bss.SSID
 		}
+
+		info.Icon = icon(mod.opts.icons, 100, info.Strength)
 	}
 
 	return nil

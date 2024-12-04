@@ -3,59 +3,63 @@ package jstat
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 )
 
-func scrollLoop(nameChan <-chan string, updates chan<- struct{}, scrollPtr *int, scrollInterval time.Duration, limit int) {
+func scrollLoop(nameChan <-chan string, updates chan<- func(), scrollPtr *int, scrollInterval time.Duration, limit int) {
 	var (
-		name    string
-		nameLen int
+		timer           <-chan time.Time
+		name            string
+		nameLen, scroll int
+		ok              bool
 	)
 
 	for {
+		timer = nil
+		if nameLen > limit {
+			timer = time.After(scrollInterval)
+		}
+
 		select {
-		case name = <-nameChan:
-			nameLen = utf8.RuneCountInString(name)
-			*scrollPtr = 0
-		case <-time.After(scrollInterval):
-			if nameLen <= limit {
-				name = <-nameChan
-				nameLen = utf8.RuneCountInString(name)
-				*scrollPtr = 0
-				break
+		case name, ok = <-nameChan:
+			if !ok {
+				return
 			}
 
-			*scrollPtr++
-			if *scrollPtr > nameLen-limit {
-				*scrollPtr = 0
+			nameLen = utf8.RuneCountInString(name)
+			scroll = 0
+		case <-timer:
+			scroll++
+			if scroll > nameLen-limit {
+				scroll = 0
 			}
 		}
 
-		updates <- struct{}{}
+		updates <- func() {
+			*scrollPtr = scroll
+		}
 	}
 }
 
-func discardNameChan(nameChan <-chan string) {
-	for {
-		<-nameChan
-	}
-}
-
-func scrollEvent(updates chan<- struct{}, scrollPtr *int, scrollInterval time.Duration, limit int) chan<- string {
+func scrollEvent(updates chan<- func(), scrollPtr *int, scrollInterval time.Duration, limit int) chan<- string {
 	var nameChan chan string
 
-	nameChan = make(chan string)
-
-	if scrollInterval == 0 || limit == 0 {
-		go discardNameChan(nameChan)
+	nameChan = make(chan string, 1)
+	if scrollInterval > 0 && limit > 0 {
+		go scrollLoop(nameChan, updates, scrollPtr, scrollInterval, limit)
 
 		return nameChan
 	}
 
-	go scrollLoop(nameChan, updates, scrollPtr, scrollInterval, limit)
+	go func() {
+		for {
+			<-nameChan
+		}
+	}()
 
 	return nameChan
 }
@@ -163,4 +167,18 @@ func meminfoMap(keys []string) (map[string]int, error) {
 	}
 
 	return keyVal, nil
+}
+
+func isIfacePowered(iface string) (bool, error) {
+	var (
+		operstate []byte
+		err       error
+	)
+
+	operstate, err = os.ReadFile(filepath.Join("/sys/class/net", iface, "operstate"))
+	if err != nil {
+		return false, err
+	}
+
+	return string(operstate) == "up\n", nil
 }

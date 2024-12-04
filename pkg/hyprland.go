@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,89 +18,97 @@ type hyprlandOpts struct {
 	limit          int
 }
 
-type hyprlandWorkspace struct {
-	Id   int
-	Name string
+type hyprlandOutput struct {
+	Window                                        string
+	Monitors                                      map[int]*hyprlandMonitor
+	ActiveMonitor, ActiveWorkspace, Scroll, Limit int
 }
 
 type hyprlandMonitor struct {
-	Active     int
-	Workspaces []hyprlandWorkspace
+	Name       string
+	Workspaces map[int]string
 }
 
 type hyprland struct {
-	opts                    *hyprlandOpts
-	socketPath, window      string
-	eventsConn              net.Conn
-	nameChan                chan<- string
-	eventsChan, updatesChan chan struct{}
-	errChan                 chan error
-	monitors                map[string]*hyprlandMonitor
-	scroll                  int
+	opts        *hyprlandOpts
+	output      *hyprlandOutput
+	socketPath  string
+	eventsChan  <-chan func() error
+	errChan     <-chan error
+	nameChan    chan<- string
+	updatesChan chan func()
 }
 
 func (mod *hyprland) Init() error {
 	var err error
 
-	err = mod.getSocketPath()
+	mod.socketPath, err = mod.getSocketPath()
 	if err != nil {
 		return err
 	}
 
-	mod.eventsConn, err = net.Dial("unix", filepath.Join(mod.socketPath, ".socket2.sock"))
+	mod.output, err = mod.initOutput()
 	if err != nil {
 		return err
 	}
 
-	mod.eventsChan = make(chan struct{}, 5)
-	go mod.eventsLoop()
+	mod.eventsChan, mod.errChan, err = mod.events()
+	if err != nil {
+		return err
+	}
 
-	mod.updatesChan = make(chan struct{}, 5)
-	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.opts.scrollInterval, mod.opts.limit)
+	mod.updatesChan = make(chan func())
+	mod.nameChan = scrollEvent(mod.updatesChan, &mod.output.Scroll, mod.opts.scrollInterval, mod.opts.limit)
+	mod.nameChan <- mod.output.Window
 
-	return mod.updateInfo()
+	return nil
 }
 
 func (mod *hyprland) Run() (json.RawMessage, error) {
-	return json.Marshal(struct {
-		Window        string
-		Monitors      map[string]*hyprlandMonitor
-		Scroll, Limit int
-	}{
-		Window:   mod.window,
-		Monitors: mod.monitors,
-		Scroll:   mod.scroll,
-		Limit:    mod.opts.limit,
-	})
+	return json.Marshal(mod.output)
 }
 
 func (mod *hyprland) Sleep() error {
-	var err error
+	var (
+		fn      func()
+		eventFn func() error
+		err     error
+	)
 
 	select {
-	case <-mod.updatesChan:
-		return nil
-	case <-mod.eventsChan:
-		return mod.updateInfo()
+	case fn = <-mod.updatesChan:
+		fn()
+	case eventFn = <-mod.eventsChan:
+		return eventFn()
 	case err = <-mod.errChan:
 		return err
 	}
+
+	return nil
 }
 
 func (mod *hyprland) Cleanup() error {
-	return mod.eventsConn.Close()
+	close(mod.nameChan)
+
+	return nil
 }
 
-func (mod *hyprland) updateInfo() error {
-	type queryWorkspace struct {
-		Id            int
-		Monitor, Name string
-	}
-
+func (mod *hyprland) initOutput() (*hyprlandOutput, error) {
 	type queryMonitor struct {
 		Name string
+		Id   int
+	}
 
-		ActiveWorkspace struct {
+	type queryWorkspace struct {
+		MonitorID, Id int
+		Name          string
+	}
+
+	type queryWindow struct {
+		Monitor int
+		Title   string
+
+		Workspace struct {
 			Id int
 		}
 	}
@@ -106,109 +116,257 @@ func (mod *hyprland) updateInfo() error {
 	var (
 		queryConn  net.Conn
 		decoder    *json.Decoder
+		output     *hyprlandOutput
 		monitors   []queryMonitor
 		monitor    queryMonitor
 		workspaces []queryWorkspace
 		workspace  queryWorkspace
+		window     queryWindow
 		err        error
-
-		window struct {
-			Title string
-		}
 	)
 
 	queryConn, err = net.Dial("unix", filepath.Join(mod.socketPath, ".socket.sock"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = queryConn.Write([]byte("[[BATCH]]j/activewindow;j/monitors;j/workspaces"))
+	_, err = queryConn.Write([]byte("[[BATCH]]j/monitors;j/workspaces;j/activewindow"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	decoder = json.NewDecoder(queryConn)
-
-	err = decoder.Decode(&window)
-	if err != nil {
-		return err
-	}
-
 	err = decoder.Decode(&monitors)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = decoder.Decode(&workspaces)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	mod.monitors = make(map[string]*hyprlandMonitor)
-	mod.window = window.Title
-	mod.nameChan <- window.Title
+	err = decoder.Decode(&window)
+	if err != nil {
+		return nil, err
+	}
+
+	output = &hyprlandOutput{
+		Window:          window.Title,
+		Monitors:        make(map[int]*hyprlandMonitor),
+		ActiveMonitor:   window.Monitor,
+		ActiveWorkspace: window.Workspace.Id,
+		Limit:           mod.opts.limit,
+	}
 
 	for _, monitor = range monitors {
-		mod.monitors[monitor.Name] = &hyprlandMonitor{
-			Active: monitor.ActiveWorkspace.Id,
+		output.Monitors[monitor.Id] = &hyprlandMonitor{
+			Name:       monitor.Name,
+			Workspaces: make(map[int]string),
 		}
 	}
 
 	for _, workspace = range workspaces {
-		mod.monitors[workspace.Monitor].Workspaces = append(mod.monitors[workspace.Monitor].Workspaces, hyprlandWorkspace{
-			Id:   workspace.Id,
-			Name: workspace.Name,
-		})
+		output.Monitors[workspace.MonitorID].Workspaces[workspace.Id] = workspace.Name
 	}
 
-	return queryConn.Close()
+	return output, queryConn.Close()
 }
 
-func (mod *hyprland) getSocketPath() error {
+func (mod *hyprland) getSocketPath() (string, error) {
 	var his, runtime string
 
 	his = os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")
 	if his == "" {
-		return errors.New("HYPRLAND_INSTANCE_SIGNATURE is not set")
+		return "", errors.New("HYPRLAND_INSTANCE_SIGNATURE is not set")
 	}
 
 	runtime = os.Getenv("XDG_RUNTIME_DIR")
 	if runtime == "" {
-		return errors.New("XDG_RUNTIME_DIR is not set")
+		return "", errors.New("XDG_RUNTIME_DIR is not set")
 	}
 
-	mod.socketPath = filepath.Join(runtime, "hypr", his)
-
-	return nil
+	return filepath.Join(runtime, "hypr", his), nil
 }
 
-func (mod *hyprland) eventsLoop() {
+func (mod *hyprland) eventHandler(eventData string) func() error {
+	var event, args []string
+
+	event = strings.Split(eventData, ">>")
+	args = strings.Split(event[1], ",")
+
+	switch event[0] {
+	case "workspacev2":
+		return func() error {
+			var (
+				id  int
+				err error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			mod.output.ActiveWorkspace = id
+
+			return nil
+		}
+	case "activewindow":
+		return func() error {
+			mod.output.Window = args[1]
+			mod.nameChan <- args[1]
+
+			return nil
+		}
+	case "monitoraddedv2":
+		return func() error {
+			var (
+				id  int
+				err error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			mod.output.Monitors[id] = &hyprlandMonitor{
+				Name:       args[1],
+				Workspaces: make(map[int]string),
+			}
+
+			return nil
+		}
+	case "monitorremoved":
+		return func() error {
+			var k int
+
+			for k = range mod.output.Monitors {
+				if mod.output.Monitors[k].Name == args[0] {
+					delete(mod.output.Monitors, k)
+
+					return nil
+				}
+			}
+
+			return fmt.Errorf("monitor %s: not found", args[0])
+		}
+	case "createworkspacev2":
+		return func() error {
+			var (
+				id  int
+				err error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			mod.output.Monitors[mod.output.ActiveMonitor].Workspaces[id] = args[1]
+
+			return nil
+		}
+	case "destroyworkspacev2":
+		return func() error {
+			var (
+				id  int
+				err error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			delete(mod.output.Monitors[mod.output.ActiveMonitor].Workspaces, id)
+
+			return nil
+		}
+	case "moveworkspacev2":
+		return func() error {
+			var (
+				k, id int
+				err   error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			for k = range mod.output.Monitors {
+				if mod.output.Monitors[k].Name == args[2] {
+					mod.output.Monitors[k].Workspaces[id] = args[1]
+					delete(mod.output.Monitors[mod.output.ActiveMonitor].Workspaces, id)
+
+					return nil
+				}
+			}
+
+			return fmt.Errorf("monitor %s: not found", args[2])
+		}
+	case "renameworkspace":
+		return func() error {
+			var (
+				id  int
+				err error
+			)
+
+			id, err = strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			mod.output.Monitors[mod.output.ActiveMonitor].Workspaces[id] = args[1]
+
+			return nil
+		}
+	default:
+		return nil
+	}
+}
+
+func (mod *hyprland) events() (<-chan func() error, <-chan error, error) {
 	var (
-		scanner *bufio.Scanner
-		event   string
+		scanner    *bufio.Scanner
+		eventsConn net.Conn
+		eventsChan chan func() error
+		errChan    chan error
+		eventFn    func() error
+		err        error
 	)
 
-	scanner = bufio.NewScanner(mod.eventsConn)
-
-	for {
-		if !scanner.Scan() {
-			mod.errChan <- scanner.Err()
-
-			return
-		}
-
-		event = scanner.Text()
-
-		switch {
-		case strings.HasPrefix(event, "activewindow>>"):
-		case strings.HasPrefix(event, "workspace>>"):
-		case strings.HasPrefix(event, "destroyworkspace>>"):
-		default:
-			continue
-		}
-
-		mod.eventsChan <- struct{}{}
+	eventsConn, err = net.Dial("unix", filepath.Join(mod.socketPath, ".socket2.sock"))
+	if err != nil {
+		return nil, nil, err
 	}
+
+	eventsChan = make(chan func() error)
+	errChan = make(chan error)
+	scanner = bufio.NewScanner(eventsConn)
+
+	go func() {
+		var err error
+
+		for scanner.Scan() {
+			eventFn = mod.eventHandler(scanner.Text())
+			if eventFn != nil {
+				eventsChan <- eventFn
+			}
+		}
+
+		err = scanner.Err()
+		if err != nil {
+			errChan <- err
+		}
+
+		close(eventsChan)
+		close(errChan)
+	}()
+
+	return eventsChan, errChan, nil
 }
 
 func NewHyprland(scrollInterval time.Duration, limit int) *hyprland {

@@ -14,13 +14,17 @@ type musicOpts struct {
 	limit          int
 }
 
+type musicOutput struct {
+	Song, State   string
+	Scroll, Limit int
+}
+
 type music struct {
 	opts        *musicOpts
+	output      *musicOutput
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
-	updatesChan chan struct{}
-	scroll      int
-	song, state string
+	updatesChan chan func()
 }
 
 func (mod *music) Init() error {
@@ -31,43 +35,42 @@ func (mod *music) Init() error {
 		return err
 	}
 
-	mod.updatesChan = make(chan struct{}, 1)
-	mod.nameChan = scrollEvent(mod.updatesChan, &mod.scroll, mod.opts.scrollInterval, mod.opts.limit)
+	mod.output = &musicOutput{Limit: mod.opts.limit}
+	mod.updatesChan = make(chan func())
+	mod.nameChan = scrollEvent(mod.updatesChan, &mod.output.Scroll, mod.opts.scrollInterval, mod.opts.limit)
 
-	return mod.updateInfo()
+	return mod.updateOutput()
 }
 
 func (mod *music) Run() (json.RawMessage, error) {
-	return json.Marshal(struct {
-		Song, State   string
-		Scroll, Limit int
-	}{
-		Song:   mod.song,
-		State:  mod.state,
-		Scroll: mod.scroll,
-		Limit:  mod.opts.limit,
-	})
+	return json.Marshal(mod.output)
 }
 
 func (mod *music) Sleep() error {
-	var err error
+	var (
+		fn  func()
+		err error
+	)
 
 	select {
-	case <-mod.updatesChan:
+	case fn = <-mod.updatesChan:
+		fn()
+
+		return nil
 	case <-mod.watcher.Event:
-		return mod.updateInfo()
+		return mod.updateOutput()
 	case err = <-mod.watcher.Error:
 		return err
 	}
-
-	return nil
 }
 
 func (mod *music) Cleanup() error {
+	close(mod.nameChan)
+
 	return mod.watcher.Close()
 }
 
-func (mod *music) updateInfo() error {
+func (mod *music) updateOutput() error {
 	var (
 		client       *mpd.Client
 		song, status mpd.Attrs
@@ -94,12 +97,12 @@ func (mod *music) updateInfo() error {
 		return err
 	}
 
-	mod.state = status["state"]
-	mod.song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.opts.format, func(key string) string {
+	mod.output.State = status["state"]
+	mod.output.Song = regexp.MustCompilePOSIX("%[A-Za-z]+%").ReplaceAllStringFunc(mod.opts.format, func(key string) string {
 		return song[key[1:len(key)-1]]
 	})
 
-	mod.nameChan <- mod.song
+	mod.nameChan <- mod.output.Song
 
 	return nil
 }
