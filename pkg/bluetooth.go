@@ -77,7 +77,7 @@ func (mod *bluetooth) Init() error {
 		return err
 	}
 
-	err = mod.sysbus.AddMatchSignal(dbus.WithMatchDestination("org.bluez"), dbus.WithMatchObjectPath("/"), dbus.WithMatchInterface("org.freedesktop.DBus.ObjectManager"), dbus.WithMatchMember("InterfacesAdded"), dbus.WithMatchMember("InterfacesRemoved"))
+	err = mod.sysbus.AddMatchSignal(dbus.WithMatchDestination("org.bluez"), dbus.WithMatchObjectPath("/"), dbus.WithMatchInterface("org.freedesktop.DBus.ObjectManager"), dbus.WithMatchMember("InterfacesAdded"))
 	if err != nil {
 		return err
 	}
