@@ -8,6 +8,8 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
+type bluetoothUpdater func(dbus.ObjectPath, map[string]dbus.Variant) error
+
 type bluetoothOpts struct {
 	scrollInterval time.Duration
 	limit          int
@@ -37,6 +39,7 @@ type bluetoothAdapter struct {
 type bluetooth struct {
 	opts        *bluetoothOpts
 	output      *bluetoothOutput
+	updaters    map[string]bluetoothUpdater
 	sysbus      *dbus.Conn
 	updatesChan chan func()
 	events      chan *dbus.Signal
@@ -46,19 +49,23 @@ func (mod *bluetooth) Init() error {
 	var (
 		objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant
 		path    dbus.ObjectPath
-		members map[string]dbus.Variant
-		ok      bool
 		err     error
 	)
-
-	mod.sysbus, err = dbus.ConnectSystemBus()
-	if err != nil {
-		return err
-	}
 
 	mod.output = &bluetoothOutput{
 		Adapters: make(map[dbus.ObjectPath]*bluetoothAdapter),
 		Limit:    mod.opts.limit,
+	}
+
+	mod.updaters = map[string]bluetoothUpdater{
+		"org.bluez.Adapter1": mod.updateAdapter,
+		"org.bluez.Device1":  mod.updateDevice,
+		"org.bluez.Battery1": mod.updateBattery,
+	}
+
+	mod.sysbus, err = dbus.ConnectSystemBus()
+	if err != nil {
+		return err
 	}
 
 	mod.updatesChan = make(chan func())
@@ -70,26 +77,15 @@ func (mod *bluetooth) Init() error {
 		return err
 	}
 
-	err = mod.sysbus.AddMatchSignal(dbus.WithMatchDestination("org.bluez"), dbus.WithMatchObjectPath("/"), dbus.WithMatchInterface("org.freedesktop.DBus.ObjectManager"), dbus.WithMatchMember("InterfacesAdded"))
+	err = mod.sysbus.AddMatchSignal(dbus.WithMatchDestination("org.bluez"), dbus.WithMatchObjectPath("/"), dbus.WithMatchInterface("org.freedesktop.DBus.ObjectManager"), dbus.WithMatchMember("InterfacesAdded"), dbus.WithMatchMember("InterfacesRemoved"))
 	if err != nil {
 		return err
 	}
 
 	for path = range objects {
-		members, ok = objects[path]["org.bluez.Adapter1"]
-		if ok {
-			err = mod.updateAdapter(path, members)
-			if err != nil {
-				return err
-			}
-		}
-
-		members, ok = objects[path]["org.bluez.Device1"]
-		if ok {
-			err = mod.updateDevice(path, members)
-			if err != nil {
-				return err
-			}
+		err = mod.updater(objects[path], path)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -131,6 +127,30 @@ func (mod *bluetooth) Cleanup() error {
 	}
 
 	return mod.sysbus.Close()
+}
+
+func (mod *bluetooth) updater(object map[string]map[string]dbus.Variant, path dbus.ObjectPath) error {
+	var (
+		iface   string
+		fn      bluetoothUpdater
+		members map[string]dbus.Variant
+		ok      bool
+		err     error
+	)
+
+	for iface, fn = range mod.updaters {
+		members, ok = object[iface]
+		if !ok {
+			continue
+		}
+
+		err = fn(path, members)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (mod *bluetooth) storeVariants(members map[string]dbus.Variant, variants map[string]any) error {
@@ -213,6 +233,7 @@ func (mod *bluetooth) updateAdapter(path dbus.ObjectPath, members map[string]dbu
 func (mod *bluetooth) updateDevice(path dbus.ObjectPath, members map[string]dbus.Variant) error {
 	var (
 		adapterPath dbus.ObjectPath
+		adapter     *bluetoothAdapter
 		device      *bluetoothDevice
 		ok          bool
 		err         error
@@ -226,17 +247,20 @@ func (mod *bluetooth) updateDevice(path dbus.ObjectPath, members map[string]dbus
 		return err
 	}
 
-	if adapterPath == "" {
+	adapter, ok = mod.output.Adapters[adapterPath]
+	if adapterPath == "" || !ok {
 		adapterPath, err = mod.deviceAdapter(path)
 		if err != nil {
 			return err
 		}
+
+		adapter = mod.output.Adapters[adapterPath]
 	}
 
-	device, ok = mod.output.Adapters[adapterPath].Devices[path]
+	device, ok = adapter.Devices[path]
 	if !ok {
-		mod.output.Adapters[adapterPath].Devices[path] = new(bluetoothDevice)
-		device = mod.output.Adapters[adapterPath].Devices[path]
+		adapter.Devices[path] = new(bluetoothDevice)
+		device = adapter.Devices[path]
 		device.nameChan = scrollEvent(mod.updatesChan, &device.Scroll, mod.opts.scrollInterval, mod.opts.limit)
 
 		err = mod.sysbus.AddMatchSignal(dbus.WithMatchDestination("org.bluez"), dbus.WithMatchObjectPath(path), dbus.WithMatchInterface("org.freedesktop.DBus.Properties"), dbus.WithMatchMember("PropertiesChanged"))
@@ -292,7 +316,6 @@ func (mod *bluetooth) signalHandler(signal *dbus.Signal) error {
 		path    dbus.ObjectPath
 		object  map[string]map[string]dbus.Variant
 		members map[string]dbus.Variant
-		ok      bool
 		err     error
 	)
 
@@ -303,51 +326,16 @@ func (mod *bluetooth) signalHandler(signal *dbus.Signal) error {
 			return err
 		}
 
-		members, ok = object["org.bluez.Adapter1"]
-		if ok {
-			err = mod.updateAdapter(path, members)
-			if err != nil {
-				return err
-			}
-		}
-
-		members, ok = object["org.bluez.Device1"]
-		if ok {
-			err = mod.updateDevice(path, members)
-			if err != nil {
-				return err
-			}
-		}
-
-		members, ok = object["org.bluez.Battery1"]
-		if ok {
-			err = mod.updateBattery(path, members)
-			if err != nil {
-				return err
-			}
-		}
+		return mod.updater(object, path)
 	case "org.freedesktop.DBus.Properties.PropertiesChanged":
 		err = dbus.Store(signal.Body, &iface, &members, &[]string{})
 		if err != nil {
 			return err
 		}
 
-		switch iface {
-		case "org.bluez.Adapter1":
-			err = mod.updateAdapter(signal.Path, members)
-			if err != nil {
-				return err
-			}
-		case "org.bluez.Device1":
-			err = mod.updateDevice(signal.Path, members)
-			if err != nil {
-				return err
-			}
-		case "org.bluez.Battery1":
-			err = mod.updateBattery(signal.Path, members)
-			if err != nil {
-				return err
-			}
+		err = mod.updaters[iface](signal.Path, members)
+		if err != nil {
+			return err
 		}
 	}
 
