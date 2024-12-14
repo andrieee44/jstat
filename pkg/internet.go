@@ -213,7 +213,7 @@ func (mod *internet) updateWifi() error {
 	return nil
 }
 
-func NewInternet(interval, scrollInterval time.Duration, limit int, icons []string) *internet {
+func NewInternet(scrollInterval, interval time.Duration, limit int, icons []string) *internet {
 	return &internet{
 		opts: &internetOpts{
 			scrollInterval: scrollInterval,

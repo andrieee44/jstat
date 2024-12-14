@@ -118,7 +118,7 @@ ethsLoop:
 	return nil
 }
 
-func NewEthernet(interval, scrollInterval time.Duration, limit int) *ethernet {
+func NewEthernet(scrollInterval, interval time.Duration, limit int) *ethernet {
 	return &ethernet{
 		opts: &ethernetOpts{
 			scrollInterval: scrollInterval,
