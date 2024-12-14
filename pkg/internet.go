@@ -15,7 +15,7 @@ import (
 )
 
 type internetOpts struct {
-	interval, scrollInterval time.Duration
+	scrollInterval, interval time.Duration
 	limit                    int
 	icons                    []string
 }

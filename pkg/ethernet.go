@@ -7,7 +7,7 @@ import (
 )
 
 type ethernetOpts struct {
-	interval, scrollInterval time.Duration
+	scrollInterval, interval time.Duration
 	limit                    int
 }
 
