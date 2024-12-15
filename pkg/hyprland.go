@@ -95,8 +95,13 @@ func (mod *hyprland) Cleanup() error {
 
 func (mod *hyprland) initOutput() (*hyprlandOutput, error) {
 	type queryMonitor struct {
-		Name string
-		Id   int
+		Id      int
+		Name    string
+		Focused bool
+
+		ActiveWorkspace struct {
+			Id int
+		}
 	}
 
 	type queryWorkspace struct {
@@ -105,17 +110,13 @@ func (mod *hyprland) initOutput() (*hyprlandOutput, error) {
 	}
 
 	type queryWindow struct {
-		Monitor int
-		Title   string
-
-		Workspace struct {
-			Id int
-		}
+		Title string
 	}
 
 	var (
 		queryConn  net.Conn
 		decoder    *json.Decoder
+		value      any
 		output     *hyprlandOutput
 		monitors   []queryMonitor
 		monitor    queryMonitor
@@ -136,30 +137,25 @@ func (mod *hyprland) initOutput() (*hyprlandOutput, error) {
 	}
 
 	decoder = json.NewDecoder(queryConn)
-	err = decoder.Decode(&monitors)
-	if err != nil {
-		return nil, err
-	}
-
-	err = decoder.Decode(&workspaces)
-	if err != nil {
-		return nil, err
-	}
-
-	err = decoder.Decode(&window)
-	if err != nil {
-		return nil, err
+	for _, value = range []any{&monitors, &workspaces, &window} {
+		err = decoder.Decode(value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	output = &hyprlandOutput{
-		Window:          window.Title,
-		Monitors:        make(map[int]*hyprlandMonitor),
-		ActiveMonitor:   window.Monitor,
-		ActiveWorkspace: window.Workspace.Id,
-		Limit:           mod.opts.limit,
+		Window:   window.Title,
+		Monitors: make(map[int]*hyprlandMonitor),
+		Limit:    mod.opts.limit,
 	}
 
 	for _, monitor = range monitors {
+		if monitor.Focused {
+			output.ActiveMonitor = monitor.Id
+			output.ActiveWorkspace = monitor.ActiveWorkspace.Id
+		}
+
 		output.Monitors[monitor.Id] = &hyprlandMonitor{
 			Name:       monitor.Name,
 			Workspaces: make(map[int]string),
