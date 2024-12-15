@@ -48,7 +48,9 @@ type bluetooth struct {
 func (mod *bluetooth) Init() error {
 	var (
 		objects map[dbus.ObjectPath]map[string]map[string]dbus.Variant
+		paths   []dbus.ObjectPath
 		path    dbus.ObjectPath
+		ok      bool
 		err     error
 	)
 
@@ -83,6 +85,17 @@ func (mod *bluetooth) Init() error {
 	}
 
 	for path = range objects {
+		_, ok = objects[path]["org.bluez.Adapter1"]
+		if ok {
+			paths = append([]dbus.ObjectPath{path}, paths...)
+
+			continue
+		}
+
+		paths = append(paths, path)
+	}
+
+	for _, path = range paths {
 		err = mod.updater(objects[path], path)
 		if err != nil {
 			return err
@@ -248,7 +261,7 @@ func (mod *bluetooth) updateDevice(path dbus.ObjectPath, members map[string]dbus
 	}
 
 	adapter, ok = mod.output.Adapters[adapterPath]
-	if adapterPath == "" || !ok {
+	if adapterPath == "" && !ok {
 		adapterPath, err = mod.deviceAdapter(path)
 		if err != nil {
 			return err
