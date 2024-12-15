@@ -37,14 +37,23 @@ func (mod *vol) Init() error {
 func (mod *vol) Run() (json.RawMessage, error) {
 	var (
 		volume     float32
+		retries    int
 		volumePerc float64
 		mute       bool
 		err        error
 	)
 
-	volume, err = mod.client.Volume()
-	if err != nil {
-		return nil, err
+	for {
+		volume, err = mod.client.Volume()
+		if err == nil {
+			break
+		}
+
+		time.Sleep(100 * time.Millisecond)
+		retries++
+		if retries >= 10 {
+			return nil, err
+		}
 	}
 
 	mute, err = mod.client.Mute()
