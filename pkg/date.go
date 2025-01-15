@@ -33,10 +33,10 @@ func (mod *date) Run() (json.RawMessage, error) {
 	}
 
 	return json.Marshal(struct {
-		Icon, Date string
+		Date, Icon string
 	}{
-		Icon: icon(mod.opts.icons, 12, float64(hour)),
 		Date: date.Format(mod.opts.format),
+		Icon: icon(mod.opts.icons, 12, float64(hour)),
 	})
 }
 

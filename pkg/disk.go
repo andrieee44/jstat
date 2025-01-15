@@ -31,7 +31,7 @@ func (mod *disk) Run() (json.RawMessage, error) {
 		diskInfoMap       map[string]*diskInfo
 		path              string
 		statfs            unix.Statfs_t
-		free, total, used int
+		total, free, used int
 		usedPerc          float64
 		err               error
 	)
@@ -44,14 +44,14 @@ func (mod *disk) Run() (json.RawMessage, error) {
 			return nil, err
 		}
 
-		free = int(statfs.Bfree) * int(statfs.Bsize)
 		total = int(statfs.Blocks) * int(statfs.Bsize)
+		free = int(statfs.Bfree) * int(statfs.Bsize)
 		used = total - free
 		usedPerc = float64(used) / float64(total) * 100
 
 		diskInfoMap[path] = &diskInfo{
-			Free:     free,
 			Total:    total,
+			Free:     free,
 			Used:     used,
 			UsedPerc: usedPerc,
 			Icon:     icon(mod.opts.icons, 100, usedPerc),

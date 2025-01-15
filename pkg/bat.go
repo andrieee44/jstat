@@ -79,8 +79,8 @@ func (mod *bat) getBatInfo(path string) (*batInfo, error) {
 
 	return &batInfo{
 		Status:   string(status[:len(status)-1]),
-		Icon:     icon(mod.opts.icons, 100, float64(capacity)),
 		Capacity: capacity,
+		Icon:     icon(mod.opts.icons, 100, float64(capacity)),
 	}, nil
 }
 

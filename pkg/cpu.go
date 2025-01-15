@@ -69,12 +69,12 @@ func (mod *cpu) Run() (json.RawMessage, error) {
 
 	return json.Marshal(struct {
 		Cores    map[int]*cpuCore
-		Icon     string
 		AvgUsage float64
+		Icon     string
 	}{
 		Cores:    mod.cores,
-		Icon:     icon(mod.opts.icons, 100, avgUsage),
 		AvgUsage: avgUsage,
+		Icon:     icon(mod.opts.icons, 100, avgUsage),
 	})
 }
 
