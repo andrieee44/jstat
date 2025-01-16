@@ -1,27 +1,27 @@
 # JSTAT
 
-[NAME](#NAME)  
-[SYNOPSIS](#SYNOPSIS)  
-[DESCRIPTION](#DESCRIPTION)  
-[CONFIGURATION](#CONFIGURATION)  
-[EXAMPLE OUTPUT](#EXAMPLE%20OUTPUT)  
-[UserHost (struct):](#UserHost%20(struct):)  
-[Date (struct):](#Date%20(struct):)  
-[Uptime (struct):](#Uptime%20(struct):)  
-[Bat (map\[string\]struct):](#Bat%20(map%5Bstring%5Dstruct):)  
-[Cpu (struct):](#Cpu%20(struct):)  
-[Bri (struct):](#Bri%20(struct):)  
-[Disk (map\[string\]struct):](#Disk%20(map%5Bstring%5Dstruct):)  
-[Swap (struct):](#Swap%20(struct):)  
-[Ram (struct)](#Ram%20(struct))  
-[Vol (struct):](#Vol%20(struct):)  
-[Music (struct):](#Music%20(struct):)  
-[Internet (struct):](#Internet%20(struct):)  
-[Ethernet (struct):](#Ethernet%20(struct):)  
-[Hyprland (struct):](#Hyprland%20(struct):)  
-[Bluetooth (struct):](#Bluetooth%20(struct):)  
-[SEE ALSO](#SEE%20ALSO)  
-[AUTHOR](#AUTHOR)  
+[NAME](#NAME)
+[SYNOPSIS](#SYNOPSIS)
+[DESCRIPTION](#DESCRIPTION)
+[CONFIGURATION](#CONFIGURATION)
+[EXAMPLE OUTPUT](#EXAMPLE%20OUTPUT)
+[UserHost (struct):](#UserHost%20(struct)%3A)
+[Date (struct):](#Date%20(struct)%3A)
+[Uptime (struct):](#Uptime%20(struct)%3A)
+[Bat (map\[string\]struct):](#Bat%20(map%5Bstring%5Dstruct)%3A)
+[Cpu (struct):](#Cpu%20(struct)%3A)
+[Bri (struct):](#Bri%20(struct)%3A)
+[Disk (map\[string\]struct):](#Disk%20(map%5Bstring%5Dstruct)%3A)
+[Swap (struct):](#Swap%20(struct)%3A)
+[Ram (struct):](#Ram%20(struct)%3A)
+[Vol (struct):](#Vol%20(struct)%3A)
+[Music (struct):](#Music%20(struct)%3A)
+[Internet (struct):](#Internet%20(struct)%3A)
+[Ethernet (struct):](#Ethernet%20(struct)%3A)
+[Hyprland (struct):](#Hyprland%20(struct)%3A)
+[Bluetooth (struct):](#Bluetooth%20(struct):)
+[SEE ALSO](#SEE%20ALSO)
+[AUTHOR](#AUTHOR)
 
 ------------------------------------------------------------------------
 
@@ -178,7 +178,7 @@ The used swap space percentage.
 
 The used swap space percentage icon.
 
-### Ram (struct) <span id="Ram (struct)"></span>
+### Ram (struct): <span id="Ram (struct):"></span>
 
 **Total (int):**
 
