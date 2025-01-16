@@ -19,7 +19,7 @@
 [Internet (struct):](#Internet%20(struct)%3A)
 [Ethernet (struct):](#Ethernet%20(struct)%3A)
 [Hyprland (struct):](#Hyprland%20(struct)%3A)
-[Bluetooth (struct):](#Bluetooth%20(struct):)
+[Bluetooth (struct):](#Bluetooth%20(struct)%3A)
 [SEE ALSO](#SEE%20ALSO)
 [AUTHOR](#AUTHOR)
 
