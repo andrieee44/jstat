@@ -329,6 +329,8 @@ func (mod *bluetooth) signalHandler(signal *dbus.Signal) error {
 		path    dbus.ObjectPath
 		object  map[string]map[string]dbus.Variant
 		members map[string]dbus.Variant
+		updater bluetoothUpdater
+		ok      bool
 		err     error
 	)
 
@@ -346,7 +348,12 @@ func (mod *bluetooth) signalHandler(signal *dbus.Signal) error {
 			return err
 		}
 
-		err = mod.updaters[iface](signal.Path, members)
+		updater, ok = mod.updaters[iface]
+		if !ok {
+			return nil
+		}
+
+		err = updater(signal.Path, members)
 		if err != nil {
 			return err
 		}
