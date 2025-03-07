@@ -125,7 +125,7 @@ func (mod *bluetooth) Sleep() error {
 	return nil
 }
 
-func (mod *bluetooth) Cleanup() error {
+func (mod *bluetooth) Close() error {
 	var (
 		adapter *bluetoothAdapter
 		device  *bluetoothDevice

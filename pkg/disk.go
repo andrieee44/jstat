@@ -67,7 +67,7 @@ func (mod *disk) Sleep() error {
 	return nil
 }
 
-func (mod *disk) Cleanup() error {
+func (mod *disk) Close() error {
 	return nil
 }
 

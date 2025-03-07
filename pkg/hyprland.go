@@ -87,7 +87,7 @@ func (mod *hyprland) Sleep() error {
 	return nil
 }
 
-func (mod *hyprland) Cleanup() error {
+func (mod *hyprland) Close() error {
 	close(mod.nameChan)
 
 	return nil

@@ -34,7 +34,7 @@ func runModule(msgChan chan<- message, name string, mod jstat.Module) {
 	panicIf(mod.Init())
 
 	defer func() {
-		panicIf(mod.Cleanup())
+		panicIf(mod.Close())
 	}()
 
 	for {

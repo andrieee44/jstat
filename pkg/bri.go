@@ -78,7 +78,7 @@ func (mod *bri) Sleep() error {
 	}
 }
 
-func (mod *bri) Cleanup() error {
+func (mod *bri) Close() error {
 	return mod.watcher.Close()
 }
 

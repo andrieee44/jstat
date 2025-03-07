@@ -54,7 +54,7 @@ func (mod *ram) Sleep() error {
 	return nil
 }
 
-func (mod *ram) Cleanup() error {
+func (mod *ram) Close() error {
 	return nil
 }
 

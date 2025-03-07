@@ -89,7 +89,7 @@ func (mod *vol) Sleep() error {
 	}
 }
 
-func (mod *vol) Cleanup() error {
+func (mod *vol) Close() error {
 	mod.client.Close()
 
 	return nil

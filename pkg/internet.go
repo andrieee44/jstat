@@ -75,7 +75,7 @@ func (mod *internet) Sleep() error {
 	}
 }
 
-func (mod *internet) Cleanup() error {
+func (mod *internet) Close() error {
 	var net *internetInfo
 
 	for _, net = range mod.output.Internets {

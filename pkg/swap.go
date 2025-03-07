@@ -53,7 +53,7 @@ func (mod *swap) Sleep() error {
 	return nil
 }
 
-func (mod *swap) Cleanup() error {
+func (mod *swap) Close() error {
 	return nil
 }
 

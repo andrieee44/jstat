@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -108,7 +109,7 @@ func removeKey(keys []string, key string) ([]string, bool) {
 
 	for i, v = range keys {
 		if v == key {
-			return append(keys[:i], keys[i+1:]...), true
+			return slices.Delete(keys, i, i+1), true
 		}
 	}
 

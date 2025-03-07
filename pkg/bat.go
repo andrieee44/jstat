@@ -56,7 +56,7 @@ func (mod *bat) Sleep() error {
 	return nil
 }
 
-func (mod *bat) Cleanup() error {
+func (mod *bat) Close() error {
 	return nil
 }
 

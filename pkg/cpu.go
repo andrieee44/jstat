@@ -84,7 +84,7 @@ func (mod *cpu) Sleep() error {
 	return nil
 }
 
-func (mod *cpu) Cleanup() error {
+func (mod *cpu) Close() error {
 	return nil
 }
 

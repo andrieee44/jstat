@@ -46,7 +46,7 @@ func (mod *date) Sleep() error {
 	return nil
 }
 
-func (mod *date) Cleanup() error {
+func (mod *date) Close() error {
 	return nil
 }
 

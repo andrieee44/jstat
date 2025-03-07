@@ -64,7 +64,7 @@ func (mod *music) Sleep() error {
 	}
 }
 
-func (mod *music) Cleanup() error {
+func (mod *music) Close() error {
 	close(mod.nameChan)
 
 	return mod.watcher.Close()

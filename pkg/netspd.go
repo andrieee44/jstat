@@ -54,7 +54,7 @@ func (mod *netSpd) Sleep() error {
 	return nil
 }
 
-func (mod *netSpd) Cleanup() error {
+func (mod *netSpd) Close() error {
 	return nil
 }
 

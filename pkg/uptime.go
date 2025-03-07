@@ -52,7 +52,7 @@ func (mod *uptime) Sleep() error {
 	return nil
 }
 
-func (mod *uptime) Cleanup() error {
+func (mod *uptime) Close() error {
 	return nil
 }
 

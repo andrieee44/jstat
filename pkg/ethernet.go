@@ -56,7 +56,7 @@ func (mod *ethernet) Sleep() error {
 	}
 }
 
-func (mod *ethernet) Cleanup() error {
+func (mod *ethernet) Close() error {
 	var eth *ethInfo
 
 	for _, eth = range mod.output.Ethernets {

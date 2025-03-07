@@ -43,7 +43,7 @@ func (mod *userHost) Sleep() error {
 	select {}
 }
 
-func (mod *userHost) Cleanup() error {
+func (mod *userHost) Close() error {
 	return nil
 }
 
