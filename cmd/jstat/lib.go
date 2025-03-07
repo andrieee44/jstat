@@ -46,13 +46,13 @@ func runModule(msgChan chan<- message, name string, mod jstat.Module) {
 	}
 }
 
-func runConfig(ch chan<- message) {
+func runConfig(msgChan chan<- message) {
 	var (
 		name string
 		mod  jstat.Module
 	)
 
 	for name, mod = range newConfig() {
-		go runModule(ch, name, mod)
+		go runModule(msgChan, name, mod)
 	}
 }
