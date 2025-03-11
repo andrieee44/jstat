@@ -3,28 +3,30 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/andrieee44/jstat/pkg"
 )
 
 func main() {
 	var (
-		msgChan chan message
-		msgJson map[string]json.RawMessage
-		msg     message
-		data    []byte
-		err     error
+		dataChan <-chan json.RawMessage
+		errChan  <-chan error
+		data     json.RawMessage
+		err      error
 	)
 
-	msgChan = make(chan message)
-	msgJson = make(map[string]json.RawMessage)
-	runConfig(msgChan)
+	dataChan, errChan = jstat.NewServer(config())
 
-	for msg = range msgChan {
-		msgJson[msg.name] = msg.data
-
-		data, err = json.Marshal(msgJson)
-		panicIf(err)
-
-		_, err = fmt.Println(string(data))
-		panicIf(err)
+	for {
+		select {
+		case data = <-dataChan:
+			_, err = fmt.Println(string(data))
+			if err != nil {
+				panic(err)
+			}
+		case err = <-errChan:
+			panic(err)
+		}
 	}
+
 }

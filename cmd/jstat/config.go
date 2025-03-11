@@ -6,7 +6,7 @@ import (
 	"github.com/andrieee44/jstat/pkg"
 )
 
-func newConfig() map[string]jstat.Module {
+func config() map[string]jstat.Module {
 	const (
 		limit     int = 15
 		listLimit     = 5
