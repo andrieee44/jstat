@@ -42,7 +42,7 @@ type bluetooth struct {
 	updaters    map[string]bluetoothUpdater
 	sysbus      *dbus.Conn
 	updatesChan chan func()
-	signals     chan *dbus.Signal
+	signalChan  chan *dbus.Signal
 }
 
 func (mod *bluetooth) Init() error {
@@ -71,8 +71,8 @@ func (mod *bluetooth) Init() error {
 	}
 
 	mod.updatesChan = make(chan func())
-	mod.signals = make(chan *dbus.Signal, 10)
-	mod.sysbus.Signal(mod.signals)
+	mod.signalChan = make(chan *dbus.Signal, 10)
+	mod.sysbus.Signal(mod.signalChan)
 
 	err = mod.sysbus.Object("org.bluez", "/").Call("org.freedesktop.DBus.ObjectManager.GetManagedObjects", 0).Store(&objects)
 	if err != nil {
@@ -118,7 +118,7 @@ func (mod *bluetooth) Sleep() error {
 	select {
 	case fn = <-mod.updatesChan:
 		fn()
-	case signal = <-mod.signals:
+	case signal = <-mod.signalChan:
 		mod.signalHandler(signal)
 	}
 
