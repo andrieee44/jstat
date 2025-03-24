@@ -379,6 +379,6 @@ The scroll limit.
 
 ## AUTHOR <span id="AUTHOR"></span>
 
-andrieee44 (andrieee44@gmail.com)
+Kris Andrie Ortega (andrieee44@gmail.com)
 
 ------------------------------------------------------------------------
