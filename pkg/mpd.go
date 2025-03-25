@@ -107,7 +107,7 @@ func (mod *music) updateOutput() error {
 	return nil
 }
 
-func NewMusic(scrollInterval time.Duration, format string, limit int) *music {
+func NewMPD(scrollInterval time.Duration, format string, limit int) *music {
 	return &music{
 		opts: &musicOpts{
 			scrollInterval: scrollInterval,

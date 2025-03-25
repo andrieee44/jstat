@@ -6,31 +6,31 @@ import (
 	"time"
 )
 
-type netSpdOpts struct {
+type netSpeedOpts struct {
 	interval time.Duration
 }
 
-type netSpd struct {
-	opts           *netSpdOpts
+type netSpeed struct {
+	opts           *netSpeedOpts
 	oldUp, oldDown int
 }
 
-func (mod *netSpd) Init() error {
+func (mod *netSpeed) Init() error {
 	return nil
 }
 
-func (mod *netSpd) Run() (json.RawMessage, error) {
+func (mod *netSpeed) Run() (json.RawMessage, error) {
 	var (
 		up, down, deltaUp, deltaDown int
 		err                          error
 	)
 
-	up, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/tx_bytes")
+	up, err = sumFiles("/sys/class/net/[ew]*/statistics/tx_bytes")
 	if err != nil {
 		return nil, err
 	}
 
-	down, err = mod.sumFiles("/sys/class/net/[ew]*/statistics/rx_bytes")
+	down, err = sumFiles("/sys/class/net/[ew]*/statistics/rx_bytes")
 	if err != nil {
 		return nil, err
 	}
@@ -48,17 +48,17 @@ func (mod *netSpd) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *netSpd) Sleep() error {
+func (mod *netSpeed) Sleep() error {
 	time.Sleep(mod.opts.interval)
 
 	return nil
 }
 
-func (mod *netSpd) Close() error {
+func (mod *netSpeed) Close() error {
 	return nil
 }
 
-func (*netSpd) sumFiles(pattern string) (int, error) {
+func sumFiles(pattern string) (int, error) {
 	var (
 		paths    []string
 		path     string
@@ -83,9 +83,9 @@ func (*netSpd) sumFiles(pattern string) (int, error) {
 	return sum, nil
 }
 
-func NewNetSpd(interval time.Duration) *netSpd {
-	return &netSpd{
-		opts: &netSpdOpts{
+func NewNetSpeed(interval time.Duration) *netSpeed {
+	return &netSpeed{
+		opts: &netSpeedOpts{
 			interval: interval,
 		},
 	}

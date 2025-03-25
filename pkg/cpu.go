@@ -143,7 +143,7 @@ func (mod *cpu) setCore(fields []string) (float64, error) {
 	return core.Usage, nil
 }
 
-func NewCpu(interval time.Duration, icons []string) *cpu {
+func NewCPU(interval time.Duration, icons []string) *cpu {
 	return &cpu{
 		opts: &cpuOpts{
 			interval: interval,

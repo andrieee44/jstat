@@ -6,17 +6,17 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type briOpts struct {
+type brightnessOpts struct {
 	icons []string
 }
 
-type bri struct {
-	opts    *briOpts
+type brightness struct {
+	opts    *brightnessOpts
 	watcher *fsnotify.Watcher
 	maxBri  int
 }
 
-func (mod *bri) Init() error {
+func (mod *brightness) Init() error {
 	var err error
 
 	mod.watcher, err = fsnotify.NewWatcher()
@@ -37,7 +37,7 @@ func (mod *bri) Init() error {
 	return nil
 }
 
-func (mod *bri) Run() (json.RawMessage, error) {
+func (mod *brightness) Run() (json.RawMessage, error) {
 	var (
 		bri  int
 		perc float64
@@ -60,7 +60,7 @@ func (mod *bri) Run() (json.RawMessage, error) {
 	})
 }
 
-func (mod *bri) Sleep() error {
+func (mod *brightness) Sleep() error {
 	var (
 		event fsnotify.Event
 		err   error
@@ -78,12 +78,12 @@ func (mod *bri) Sleep() error {
 	}
 }
 
-func (mod *bri) Close() error {
+func (mod *brightness) Close() error {
 	return mod.watcher.Close()
 }
 
-func NewBri(icons []string) *bri {
-	return &bri{
-		opts: &briOpts{icons: icons},
+func NewBrightness(icons []string) *brightness {
+	return &brightness{
+		opts: &brightnessOpts{icons: icons},
 	}
 }

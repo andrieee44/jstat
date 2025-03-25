@@ -7,28 +7,28 @@ import (
 	"time"
 )
 
-type batOpts struct {
+type batteryOpts struct {
 	interval time.Duration
 	icons    []string
 }
 
-type batInfo struct {
+type batteryInfo struct {
 	Status, Icon string
 	Capacity     int
 }
 
-type bat struct {
-	opts *batOpts
+type battery struct {
+	opts *batteryOpts
 }
 
-func (mod *bat) Init() error {
+func (mod *battery) Init() error {
 	return nil
 }
 
-func (mod *bat) Run() (json.RawMessage, error) {
+func (mod *battery) Run() (json.RawMessage, error) {
 	var (
 		batPaths   []string
-		batInfoMap map[string]*batInfo
+		batInfoMap map[string]*batteryInfo
 		path       string
 		err        error
 	)
@@ -38,7 +38,7 @@ func (mod *bat) Run() (json.RawMessage, error) {
 		return nil, err
 	}
 
-	batInfoMap = make(map[string]*batInfo)
+	batInfoMap = make(map[string]*batteryInfo)
 
 	for _, path = range batPaths {
 		batInfoMap[filepath.Base(path)], err = mod.getBatInfo(path)
@@ -50,17 +50,17 @@ func (mod *bat) Run() (json.RawMessage, error) {
 	return json.Marshal(batInfoMap)
 }
 
-func (mod *bat) Sleep() error {
+func (mod *battery) Sleep() error {
 	time.Sleep(mod.opts.interval)
 
 	return nil
 }
 
-func (mod *bat) Close() error {
+func (mod *battery) Close() error {
 	return nil
 }
 
-func (mod *bat) getBatInfo(path string) (*batInfo, error) {
+func (mod *battery) getBatInfo(path string) (*batteryInfo, error) {
 	var (
 		status   []byte
 		capacity int
@@ -77,16 +77,16 @@ func (mod *bat) getBatInfo(path string) (*batInfo, error) {
 		return nil, err
 	}
 
-	return &batInfo{
+	return &batteryInfo{
 		Status:   string(status[:len(status)-1]),
 		Capacity: capacity,
 		Icon:     icon(mod.opts.icons, 100, float64(capacity)),
 	}, nil
 }
 
-func NewBat(interval time.Duration, icons []string) *bat {
-	return &bat{
-		opts: &batOpts{
+func NewBattery(interval time.Duration, icons []string) *battery {
+	return &battery{
+		opts: &batteryOpts{
 			interval: interval,
 			icons:    icons,
 		},
