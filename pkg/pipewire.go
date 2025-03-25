@@ -48,13 +48,22 @@ func (mod *pipeWire) Run() (json.RawMessage, error) {
 }
 
 func (mod *pipeWire) Sleep() error {
-	var err error
+	var (
+		info *pwmon.Info
+		err  error
+	)
 
-	select {
-	case mod.info = <-mod.infoChan:
-		return nil
-	case err = <-mod.errChan:
-		return err
+	for {
+		select {
+		case info = <-mod.infoChan:
+			if info.Volume != mod.info.Volume || info.Mute != mod.info.Mute {
+				mod.info = info
+
+				return nil
+			}
+		case err = <-mod.errChan:
+			return err
+		}
 	}
 }
 
