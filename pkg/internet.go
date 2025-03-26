@@ -15,9 +15,9 @@ import (
 )
 
 type internetOpts struct {
+	icons                    []string
 	scrollInterval, interval time.Duration
 	limit                    int
-	icons                    []string
 }
 
 type internetOutput struct {
@@ -27,10 +27,10 @@ type internetOutput struct {
 
 type internetInfo struct {
 	Name, Icon        string
-	Powered, Scanning bool
 	Scroll            int
 	Strength          float64
 	nameChan          chan<- string
+	Powered, Scanning bool
 }
 
 type internet struct {
@@ -106,7 +106,6 @@ func (mod *internet) strength(iface string) (float64, error) {
 		scanner  *bufio.Scanner
 		fields   []string
 		strength float64
-		idx      int
 	)
 
 	wireless, err = os.Open("/proc/net/wireless")
@@ -115,7 +114,7 @@ func (mod *internet) strength(iface string) (float64, error) {
 	}
 
 	scanner = bufio.NewScanner(wireless)
-	for idx = 0; idx < 2; idx++ {
+	for range 2 {
 		if scanner.Scan() {
 			continue
 		}

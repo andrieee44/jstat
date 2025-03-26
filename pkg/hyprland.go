@@ -30,9 +30,9 @@ type hyprlandMonitor struct {
 }
 
 type hyprland struct {
+	socketPath  string
 	opts        *hyprlandOpts
 	output      *hyprlandOutput
-	socketPath  string
 	eventsChan  <-chan func() error
 	errChan     <-chan error
 	nameChan    chan<- string

@@ -6,9 +6,9 @@ import (
 )
 
 type dateOpts struct {
-	interval time.Duration
-	format   string
 	icons    []string
+	format   string
+	interval time.Duration
 }
 
 type date struct {

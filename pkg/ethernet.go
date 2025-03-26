@@ -12,14 +12,14 @@ type ethernetOpts struct {
 }
 
 type ethernetOutput struct {
-	Ethernets map[string]*ethInfo
+	Ethernets map[string]*ethernetInfo
 	Limit     int
 }
 
-type ethInfo struct {
-	Powered  bool
+type ethernetInfo struct {
 	Scroll   int
 	nameChan chan<- string
+	Powered  bool
 }
 
 type ethernet struct {
@@ -30,7 +30,7 @@ type ethernet struct {
 
 func (mod *ethernet) Init() error {
 	mod.output = &ethernetOutput{
-		Ethernets: make(map[string]*ethInfo),
+		Ethernets: make(map[string]*ethernetInfo),
 		Limit:     mod.opts.limit,
 	}
 
@@ -57,7 +57,7 @@ func (mod *ethernet) Sleep() error {
 }
 
 func (mod *ethernet) Close() error {
-	var eth *ethInfo
+	var eth *ethernetInfo
 
 	for _, eth = range mod.output.Ethernets {
 		close(eth.nameChan)
@@ -70,7 +70,7 @@ func (mod *ethernet) updateEth() error {
 	var (
 		ethPaths          []string
 		ethIface, ethPath string
-		info              *ethInfo
+		info              *ethernetInfo
 		powered, ok       bool
 		err               error
 	)
@@ -97,7 +97,7 @@ ethsLoop:
 
 		info, ok = mod.output.Ethernets[ethPath]
 		if !ok {
-			mod.output.Ethernets[ethPath] = new(ethInfo)
+			mod.output.Ethernets[ethPath] = new(ethernetInfo)
 			info = mod.output.Ethernets[ethPath]
 			info.nameChan = scrollEvent(mod.updatesChan, &info.Scroll, mod.opts.scrollInterval, mod.opts.limit)
 			info.nameChan <- ethPath

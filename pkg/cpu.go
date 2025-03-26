@@ -11,8 +11,8 @@ import (
 )
 
 type cpuOpts struct {
-	interval time.Duration
 	icons    []string
+	interval time.Duration
 }
 
 type cpuCore struct {

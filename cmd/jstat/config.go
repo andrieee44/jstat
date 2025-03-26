@@ -9,7 +9,7 @@ import (
 func config() map[string]jstat.Module {
 	const (
 		limit     int = 15
-		listLimit     = 5
+		listLimit int = 5
 	)
 
 	var diskPaths, batIcons, blockIcons, clockIcons, briIcons, volIcons, internetIcons []string

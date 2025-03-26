@@ -8,8 +8,8 @@ import (
 )
 
 type pipeWireOpts struct {
-	discardInterval time.Duration
 	icons           []string
+	discardInterval time.Duration
 }
 
 type pipeWire struct {

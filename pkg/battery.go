@@ -8,8 +8,8 @@ import (
 )
 
 type batteryOpts struct {
-	interval time.Duration
 	icons    []string
+	interval time.Duration
 }
 
 type batteryInfo struct {

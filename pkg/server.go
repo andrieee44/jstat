@@ -5,8 +5,8 @@ import (
 )
 
 type message struct {
-	name string
 	data json.RawMessage
+	name string
 }
 
 func runModule(msgChan chan<- message, errChan chan<- error, name string, mod Module) {

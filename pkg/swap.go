@@ -6,8 +6,8 @@ import (
 )
 
 type swapOpts struct {
-	interval time.Duration
 	icons    []string
+	interval time.Duration
 }
 
 type swap struct {

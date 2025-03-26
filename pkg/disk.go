@@ -8,8 +8,8 @@ import (
 )
 
 type diskOpts struct {
-	interval     time.Duration
 	paths, icons []string
+	interval     time.Duration
 }
 
 type disk struct {

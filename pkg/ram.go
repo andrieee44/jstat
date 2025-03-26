@@ -6,8 +6,8 @@ import (
 )
 
 type ramOpts struct {
-	interval time.Duration
 	icons    []string
+	interval time.Duration
 }
 
 type ram struct {

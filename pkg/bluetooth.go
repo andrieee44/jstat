@@ -11,9 +11,9 @@ import (
 type bluetoothUpdater func(dbus.ObjectPath, map[string]dbus.Variant) error
 
 type bluetoothOpts struct {
+	icons          []string
 	scrollInterval time.Duration
 	limit          int
-	icons          []string
 }
 
 type bluetoothOutput struct {
@@ -24,16 +24,16 @@ type bluetoothOutput struct {
 type bluetoothDevice struct {
 	Name, Icon      string
 	Battery, Scroll int
-	Connected       bool
 	nameChan        chan<- string
+	Connected       bool
 }
 
 type bluetoothAdapter struct {
 	Name                 string
-	Scroll               int
-	Powered, Discovering bool
 	Devices              map[dbus.ObjectPath]*bluetoothDevice
+	Scroll               int
 	nameChan             chan<- string
+	Powered, Discovering bool
 }
 
 type bluetooth struct {

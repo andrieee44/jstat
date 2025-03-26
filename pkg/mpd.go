@@ -9,8 +9,8 @@ import (
 )
 
 type musicOpts struct {
-	scrollInterval time.Duration
 	format         string
+	scrollInterval time.Duration
 	limit          int
 }
 
