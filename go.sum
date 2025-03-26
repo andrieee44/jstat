@@ -1,5 +1,7 @@
 github.com/andrieee44/pwmon v0.0.0-20250324122047-71b5c824976f h1:EJhvi7aEVUBjCAGa8mPDl2h/ZeG55c4NN0fA8HIV9Xw=
 github.com/andrieee44/pwmon v0.0.0-20250324122047-71b5c824976f/go.mod h1:vBCtEXtLHYsA9XM2pVQzwUXPICWrHLMyDbMfITbrcBM=
+github.com/andrieee44/pwmon v0.0.0-20250326110300-7a83ea3c7b8a h1:wMYVomQeR/tzelzZXUF0bWR5P+eu1iBAnVg7YXQIeVg=
+github.com/andrieee44/pwmon v0.0.0-20250326110300-7a83ea3c7b8a/go.mod h1:vBCtEXtLHYsA9XM2pVQzwUXPICWrHLMyDbMfITbrcBM=
 github.com/fhs/gompd/v2 v2.3.0 h1:wuruUjmOODRlJhrYx73rJnzS7vTSXSU7pWmZtM3VPE0=
 github.com/fhs/gompd/v2 v2.3.0/go.mod h1:nNdZtcpD5VpmzZbRl5rV6RhxeMmAWTxEsSIMBkmMIy4=
 github.com/fsnotify/fsnotify v1.8.0 h1:dAwr6QBTBZIkG8roQaJjGof0pp0EeF+tNV7YBP3F/8M=
