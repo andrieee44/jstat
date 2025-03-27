@@ -50,13 +50,11 @@ func (mod *pipeWire) Run() (json.RawMessage, error) {
 func (mod *pipeWire) Sleep() error {
 	var err error
 
-	for {
-		select {
-		case mod.info = <-mod.infoChan:
-			return nil
-		case err = <-mod.errChan:
-			return err
-		}
+	select {
+	case mod.info = <-mod.infoChan:
+		return nil
+	case err = <-mod.errChan:
+		return err
 	}
 }
 
