@@ -2,6 +2,8 @@ package jstat
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -25,12 +27,15 @@ type music struct {
 	watcher     *mpd.Watcher
 	nameChan    chan<- string
 	updatesChan chan func()
+	socketPath  string
 }
 
 func (mod *music) Init() error {
 	var err error
 
-	mod.watcher, err = mpd.NewWatcher("tcp", "127.0.0.1:6600", "", "player")
+	mod.socketPath = filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "mpd/socket")
+
+	mod.watcher, err = mpd.NewWatcher("unix", mod.socketPath, "", "player")
 	if err != nil {
 		return err
 	}
@@ -77,7 +82,7 @@ func (mod *music) updateOutput() error {
 		err          error
 	)
 
-	client, err = mpd.Dial("tcp", "127.0.0.1:6600")
+	client, err = mpd.Dial("unix", mod.socketPath)
 	if err != nil {
 		return err
 	}
