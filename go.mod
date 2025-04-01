@@ -5,7 +5,7 @@ go 1.24.1
 require github.com/fsnotify/fsnotify v1.8.0
 
 require (
-	github.com/andrieee44/pwmon v0.0.0-20250327110736-16e1071fb8d6
+	github.com/andrieee44/pwmon v0.0.0-20250401100852-aeccd1196635
 	github.com/fhs/gompd/v2 v2.3.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/mdlayher/wifi v0.4.0
