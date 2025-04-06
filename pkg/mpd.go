@@ -2,11 +2,10 @@ package jstat
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"regexp"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/fhs/gompd/v2/mpd"
 )
 
@@ -33,7 +32,10 @@ type music struct {
 func (mod *music) Init() error {
 	var err error
 
-	mod.socketPath = filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "mpd/socket")
+	mod.socketPath, err = xdg.SearchRuntimeFile("mpd/socket")
+	if err != nil {
+		return err
+	}
 
 	mod.watcher, err = mpd.NewWatcher("unix", mod.socketPath, "", "player")
 	if err != nil {
