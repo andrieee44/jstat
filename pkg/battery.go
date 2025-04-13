@@ -84,6 +84,7 @@ func (mod *battery) getBatInfo(path string) (*batteryInfo, error) {
 	}, nil
 }
 
+// NewBattery returns a [Module] that reports the battery information of the laptop.
 func NewBattery(interval time.Duration, icons []string) Module {
 	return &battery{
 		opts: &batteryOpts{

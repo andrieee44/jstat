@@ -20,84 +20,48 @@ jstat \- system statistics in JSON
 is a system statistics aggregator, originally designed to work with
 .IR eww .
 .SH CONFIGURATION
-Configuration is done by altering
-.BR \%cmd/jstat/config.go .
-See
-.B \%https://github.com/andrieee44/jstat
-for more information.
+Configuration is done by altering the source code, specifically
+.B \%https://github.com/andrieee44/jstat/cmd/jstat/config.go
+then recompiling the program.
 .SH EXAMPLE OUTPUT
-.SS UserHost (struct):
-.DOCP 0 "UID (string):" "The user's ID."
-.DOCP 0 "GID (string):" "The user's group ID."
-.DOCP 0 "Name (string):" "The user's username."
-.DOCP 0 "Host (string):" "The hostname of the system."
-.SS Date (struct):
-.DOCP 0 "Date (string):" "The current time."
-.DOCP 0 "Icon (string):" "The hour icon."
-.SS Uptime (struct):
-.DOCP 0 "Hours (int):" "The amount of uptime hours."
-.DOCP 0 "Minutes (int):" "The amount of uptime minutes."
-.DOCP 0 "Seconds (int):" "The amount of uptime seconds."
-.SS Bat (map[string]struct):
+.SS Battery (map[string]struct):
 .TP
 .B Status (string):
 The current status of the battery. Possible values are:
 .BR \%\(dqCharging\(dq ", " \%\(dqDischarging\(dq ", " \%\(dqFull\(dq ", " "\%\(dqNot Charging\(dq" ", " \%\(dqUnknown\(dq .
 .DOCP 0 "Capacity (int):" "The battery capacity in percentage."
 .DOCP 0 "Icon (string):" "The battery capacity icon."
-.SS Cpu (struct):
+.SS Bluetooth (struct):
+.DOCP 0 "Adapter (map[string]struct):" "The bluetooth adapters on the system."
+.DOCP 1 "Name (string):" "The bluetooth adapter interface name."
+.DOCP 1 "Scroll (int):" "The index offset for text scrolling effect."
+.DOCP 1 "Powered (bool):" "Whether the bluetooth adapter is powered on."
+.DOCP 1 "Discovering (bool):" "Whether the bluetooth adapter is discovering other available devices."
+.DOCP 1 "Devices (map[string]struct):" "The devices known to the bluetooth adapter."
+.DOCP 2 "Name (string):" "The name of the device."
+.DOCP 2 "Icon (string):" "The battery capacity icon."
+.DOCP 2 "Battery (int):" "The battery capacity in percentage."
+.DOCP 2 "Scroll (int):" "The index offset for text scrolling effect."
+.DOCP 2 "Connected (bool):" "Whether the device is currently connected to the bluetooth adapter."
+.DOCP 0 "Limit (int):" "The scroll limit."
+.SS Brightness (struct):
+.DOCP 0 "Perc (float64):" "The screen brightness percentage."
+.DOCP 0 "Icon (string):" "The screen brightness percentage icon."
+.SS CPU (struct):
 .DOCP 0 "Cores (map[int]struct):" "The list of CPU cores in the system."
 .DOCP 1 "Freq (int):" "The frequency of the CPU core."
 .DOCP 1 "Usage (float64):" "The CPU core usage in percentage."
 .DOCP 0 "AvgUsage (float64):" "The average usage of all CPU cores."
 .DOCP 0 "Icon (string):" "The average usage icon of all CPU cores."
-.SS Bri (struct):
-.DOCP 0 "Perc (float64):" "The screen brightness percentage."
-.DOCP 0 "Icon (string):" "The screen brightness percentage icon."
+.SS Date (struct):
+.DOCP 0 "Date (string):" "The current time."
+.DOCP 0 "Icon (string):" "The hour icon."
 .SS Disk (map[string]struct):
 .DOCP 0 "Total (int):" "The total disk space in \fIpath\fR."
 .DOCP 0 "Free (int):" "The free disk space available in \fIpath\fR."
 .DOCP 0 "Used (int):" "The used disk space in \fIpath\fR."
 .DOCP 0 "UsedPerc (float64):" "The used disk space percentage in \fIpath\fR."
 .DOCP 0 "Icon (string):" "The used disk space percentage icon in \fIpath\fR."
-.SS Swap (struct):
-.DOCP 0 "Total (int):" "The total swap space."
-.DOCP 0 "Free (int):" "The free swap space."
-.TP
-.BR Used " (int):
-The used swap space.
-.DOCP 0 "UsedPerc (float64):" "The used swap space percentage."
-.DOCP 0 "Icon (string):" "The used swap space percentage icon."
-.SS Ram " (struct):"
-.DOCP 0 "Total (int):" "The total RAM in the system."
-.DOCP 0 "Free (int):" "The free RAM in the system."
-.DOCP 0 "Available (int):" "The available RAM in the system."
-.DOCP 0 "Used (int):" "The used RAM in the system."
-.DOCP 0 "UsedPerc (float64):" "The used RAM percentage in the system."
-.DOCP 0 "Icon (string):" "The used RAM percentage icon."
-.SS Vol (struct):
-.DOCP 0 "Perc (float64):" "The volume loudness percentage."
-.DOCP 0 "Mute (bool):" "Whether the volume is muted."
-.DOCP 0 "Icon (string):" "The volume loudness percentage icon."
-.SS Music (struct):
-.DOCP 0 "Song (string):" "The current song loaded in \fImpd\fR(1)."
-.TP
-.B State (string):
-The state of the music player of
-.IR mpd (1).
-Possible values are
-.BR \%\(dqplay\(dq ", " \%\(dqpause\(dq ", " \%\(dqstop\(dq .
-.DOCP 0 "Scroll (int):" "The index offset for text scrolling effect."
-.DOCP 0 "Limit (int):" "The scroll limit."
-.SS Internet (struct):
-.DOCP 0 "Internets (map[string]struct):" "The list of available system wifi interfaces."
-.DOCP 1 "Name (string):" "The SSID of the wifi."
-.DOCP 1 "Icon (string):" "The signal strength percentage of the wifi icon."
-.DOCP 1 "Powered (bool):" "Whether the system wifi interface is powered on."
-.DOCP 1 "Scanning (bool):" "Whether the system wifi interface is scanning for available wifis."
-.DOCP 1 "Scroll (int):" "The index offset for text scrolling effect."
-.DOCP 1 "Strength (float64):" "The signal strength percentage of the wifi."
-.DOCP 0 "Limit (int):" "The scroll limit."
 .SS Ethernet (struct):
 .DOCP 0 "Ethernets (map[string]struct):" "The list of available system ethernet interfaces."
 .DOCP 1 "Powered (bool):" "Whether the system ethernet interface is powered on."
@@ -112,19 +76,53 @@ Possible values are
 .DOCP 0 "ActiveWorkspace (int):" "The current active workspace in Hyprland."
 .DOCP 0 "Scroll (int):" "The index offset for text scrolling effect."
 .DOCP 0 "Limit (int):" "The scroll limit."
-.SS Bluetooth (struct):
-.DOCP 0 "Adapter (map[string]struct):" "The bluetooth adapters on the system."
-.DOCP 1 "Name (string):" "The bluetooth adapter interface name."
+.SS Internet (struct):
+.DOCP 0 "Internets (map[string]struct):" "The list of available system wifi interfaces."
+.DOCP 1 "Name (string):" "The SSID of the wifi."
+.DOCP 1 "Icon (string):" "The signal strength percentage of the wifi icon."
+.DOCP 1 "Powered (bool):" "Whether the system wifi interface is powered on."
+.DOCP 1 "Scanning (bool):" "Whether the system wifi interface is scanning for available wifis."
 .DOCP 1 "Scroll (int):" "The index offset for text scrolling effect."
-.DOCP 1 "Powered (bool):" "Whether the bluetooth adapter is powered on."
-.DOCP 1 "Discovering (bool):" "Whether the bluetooth adapter is discovering other available devices."
-.DOCP 1 "Devices (map[string]struct):" "The devices known to the bluetooth adapter."
-.DOCP 2 "Name (string):" "The name of the device."
-.DOCP 2 "Icon (string):" "The battery capacity icon."
-.DOCP 2 "Battery (int):" "The battery capacity in percentage."
-.DOCP 2 "Scroll (int):" "The index offset for text scrolling effect."
-.DOCP 2 "Connected (bool):" "Whether the device is currently connected to the bluetooth adapter."
+.DOCP 1 "Strength (float64):" "The signal strength percentage of the wifi."
 .DOCP 0 "Limit (int):" "The scroll limit."
+.SS MPD (struct):
+.DOCP 0 "Song (string):" "The current song loaded in \fImpd\fR(1)."
+.TP
+.B State (string):
+The state of the music player of
+.IR mpd (1).
+Possible values are
+.BR \%\(dqplay\(dq ", " \%\(dqpause\(dq ", " \%\(dqstop\(dq .
+.DOCP 0 "Scroll (int):" "The index offset for text scrolling effect."
+.DOCP 0 "Limit (int):" "The scroll limit."
+.SS PipeWire (struct):
+.DOCP 0 "Perc (float64):" "The PipeWire default audio sink volume loudness percentage."
+.DOCP 0 "Mute (bool):" "Whether the PipeWire default audio sink is muted."
+.DOCP 0 "Icon (string):" "The PipeWire default audio sink volume loudness percentage icon."
+.SS Ram " (struct):"
+.DOCP 0 "Total (int):" "The total RAM in the system."
+.DOCP 0 "Free (int):" "The free RAM in the system."
+.DOCP 0 "Available (int):" "The available RAM in the system."
+.DOCP 0 "Used (int):" "The used RAM in the system."
+.DOCP 0 "UsedPerc (float64):" "The used RAM percentage in the system."
+.DOCP 0 "Icon (string):" "The used RAM percentage icon."
+.SS Swap (struct):
+.DOCP 0 "Total (int):" "The total swap space."
+.DOCP 0 "Free (int):" "The free swap space."
+.TP
+.BR Used " (int):
+The used swap space.
+.DOCP 0 "UsedPerc (float64):" "The used swap space percentage."
+.DOCP 0 "Icon (string):" "The used swap space percentage icon."
+.SS Uptime (struct):
+.DOCP 0 "Hours (int):" "The amount of uptime hours."
+.DOCP 0 "Minutes (int):" "The amount of uptime minutes."
+.DOCP 0 "Seconds (int):" "The amount of uptime seconds."
+.SS UserHost (struct):
+.DOCP 0 "UID (string):" "The user's ID."
+.DOCP 0 "GID (string):" "The user's group ID."
+.DOCP 0 "Name (string):" "The user's username."
+.DOCP 0 "Host (string):" "The hostname of the system."
 .SH SEE ALSO
 .IR mpd (1).
 .SH AUTHOR
