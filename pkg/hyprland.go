@@ -365,7 +365,7 @@ func (mod *hyprland) events() (<-chan func() error, <-chan error, error) {
 	return eventsChan, errChan, nil
 }
 
-func NewHyprland(scrollInterval time.Duration, limit int) *hyprland {
+func NewHyprland(scrollInterval time.Duration, limit int) Module {
 	return &hyprland{
 		opts: &hyprlandOpts{
 			scrollInterval: scrollInterval,

@@ -57,7 +57,7 @@ func (mod *swap) Close() error {
 	return nil
 }
 
-func NewSwap(interval time.Duration, icons []string) *swap {
+func NewSwap(interval time.Duration, icons []string) Module {
 	return &swap{
 		opts: &swapOpts{
 			interval: interval,

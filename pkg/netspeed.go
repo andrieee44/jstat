@@ -83,7 +83,7 @@ func sumFiles(pattern string) (int, error) {
 	return sum, nil
 }
 
-func NewNetSpeed(interval time.Duration) *netSpeed {
+func NewNetSpeed(interval time.Duration) Module {
 	return &netSpeed{
 		opts: &netSpeedOpts{
 			interval: interval,

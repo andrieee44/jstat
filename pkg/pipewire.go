@@ -62,7 +62,7 @@ func (mod *pipeWire) Close() error {
 	return nil
 }
 
-func NewPipeWire(discardInterval time.Duration, icons []string) *pipeWire {
+func NewPipeWire(discardInterval time.Duration, icons []string) Module {
 	return &pipeWire{
 		opts: &pipeWireOpts{
 			discardInterval: discardInterval,

@@ -58,7 +58,7 @@ func (mod *ram) Close() error {
 	return nil
 }
 
-func NewRam(interval time.Duration, icons []string) *ram {
+func NewRam(interval time.Duration, icons []string) Module {
 	return &ram{
 		opts: &ramOpts{
 			interval: interval,

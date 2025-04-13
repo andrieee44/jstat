@@ -82,7 +82,7 @@ func (mod *brightness) Close() error {
 	return mod.watcher.Close()
 }
 
-func NewBrightness(icons []string) *brightness {
+func NewBrightness(icons []string) Module {
 	return &brightness{
 		opts: &brightnessOpts{icons: icons},
 	}

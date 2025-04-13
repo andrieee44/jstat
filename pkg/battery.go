@@ -84,7 +84,7 @@ func (mod *battery) getBatInfo(path string) (*batteryInfo, error) {
 	}, nil
 }
 
-func NewBattery(interval time.Duration, icons []string) *battery {
+func NewBattery(interval time.Duration, icons []string) Module {
 	return &battery{
 		opts: &batteryOpts{
 			interval: interval,

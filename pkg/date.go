@@ -50,7 +50,7 @@ func (mod *date) Close() error {
 	return nil
 }
 
-func NewDate(interval time.Duration, format string, icons []string) *date {
+func NewDate(interval time.Duration, format string, icons []string) Module {
 	return &date{
 		opts: &dateOpts{
 			interval: interval,

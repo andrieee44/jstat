@@ -71,7 +71,7 @@ func (mod *disk) Close() error {
 	return nil
 }
 
-func NewDisk(interval time.Duration, paths, icons []string) *disk {
+func NewDisk(interval time.Duration, paths, icons []string) Module {
 	return &disk{
 		opts: &diskOpts{
 			interval: interval,

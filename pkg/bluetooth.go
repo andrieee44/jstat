@@ -362,7 +362,7 @@ func (mod *bluetooth) signalHandler(signal *dbus.Signal) error {
 	return nil
 }
 
-func NewBluetooth(scrollInterval time.Duration, limit int, icons []string) *bluetooth {
+func NewBluetooth(scrollInterval time.Duration, limit int, icons []string) Module {
 	return &bluetooth{
 		opts: &bluetoothOpts{
 			scrollInterval: scrollInterval,

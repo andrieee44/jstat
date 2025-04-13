@@ -56,7 +56,7 @@ func (mod *uptime) Close() error {
 	return nil
 }
 
-func NewUptime(interval time.Duration) *uptime {
+func NewUptime(interval time.Duration) Module {
 	return &uptime{
 		opts: &uptimeOpts{interval: interval},
 	}

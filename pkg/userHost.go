@@ -47,6 +47,6 @@ func (mod *userHost) Close() error {
 	return nil
 }
 
-func NewUserHost() *userHost {
+func NewUserHost() Module {
 	return &userHost{}
 }
